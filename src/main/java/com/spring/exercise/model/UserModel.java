@@ -24,18 +24,15 @@ public class UserModel {
   private LocalDateTime modifiedAt;
 
   @Indexed(unique = true)
-  private String username;
-  private String password;
-  @Indexed
   private String email;
+  private String password;
 
   public UserModel() {
   }
 
-  public UserModel(String username, String password, String email) {
-    this.username = username;
-    this.password = password;
+  public UserModel(String email, String password) {
     this.email = email;
+    this.password = password;
   }
 
 }

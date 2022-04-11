@@ -19,14 +19,14 @@ public class UserService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserModel foundByUsername = userRepository.findByUsername(username);
-        if (foundByUsername == null) {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserModel foundByEmail = userRepository.findByEmail(email);
+        if (foundByEmail == null) {
             return null;
         }
-        String name = foundByUsername.getUsername();
-        String password = foundByUsername.getPassword();
+        String mail = foundByEmail.getEmail();
+        String password = foundByEmail.getPassword();
 
-        return new User(name, password, new ArrayList<>());
+        return new User(mail, password, new ArrayList<>());
     }
 }
