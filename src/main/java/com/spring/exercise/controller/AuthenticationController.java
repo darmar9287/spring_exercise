@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.*;
 
 @RestController
@@ -64,20 +63,20 @@ public class AuthenticationController {
 
 }
 
-    @PostMapping("/sign_up")
+  @PostMapping("/sign_up")
     private ResponseEntity<?> login(@RequestBody AuthenticationRequest authenticationRequest) {
-        String userName = authenticationRequest.getMail();
-        String password = authenticationRequest.getPassword();
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, password));
-        } catch (Exception e) {
-            //return ResponseEntity.ok(new AuthenticationResponse("Error occurred while authenticating user"));
-        }
-        UserDetails loadedUser = userService.loadUserByUsername(userName);
-        String generatedToken = jwtUtils.generateToken(loadedUser);
+      String userName = authenticationRequest.getMail();
+      String password = authenticationRequest.getPassword();
+      try {
+          authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, password));
+      } catch (Exception e) {
+          //return ResponseEntity.ok(new AuthenticationResponse("Error occurred while authenticating user"));
+      }
+      UserDetails loadedUser = userService.loadUserByUsername(userName);
+      String generatedToken = jwtUtils.generateToken(loadedUser);
 
-        return ResponseEntity.ok().body("");
+      return ResponseEntity.ok().body("");
 
-    }
+  }
 
 }
