@@ -7,11 +7,11 @@ import lombok.Setter;
 @Setter
 public class AuthenticationRequest {
 
-    String userName;
+    String mail;
     String password;
 
-    public AuthenticationRequest(String userName, String password) {
-        this.userName = userName;
+    public AuthenticationRequest(String mail, String password) {
+        this.mail = mail;
         this.password = password;
     }
 }
