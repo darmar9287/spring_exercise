@@ -2,15 +2,24 @@ package com.spring.exercise.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
 public class AuthenticationResponse {
 
-    private String response;
+    public static ResponseEntity<Object> generateResponse(String message, HttpStatus status, UserModel responseObj) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("email: ", responseObj.getEmail());
+        map.put("id", responseObj.getId().toString());
+        map.put("message", message);
+        map.put("status", status.value());
 
-    public AuthenticationResponse(String response) {
-        this.response = response;
+        return new ResponseEntity<Object>(map,status);
     }
-
 }
