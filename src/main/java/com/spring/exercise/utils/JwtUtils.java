@@ -13,7 +13,6 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtils {
-
     //not secure neither secret itself nor storing here
     //just for exercise purpose
     private static final String SECRET_KEY = "maslo";

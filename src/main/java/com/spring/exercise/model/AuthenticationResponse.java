@@ -15,7 +15,7 @@ public class AuthenticationResponse {
 
     public static ResponseEntity<Object> generateResponse(String message, HttpStatus status, UserModel responseObj) {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("email: ", responseObj.getEmail());
+        map.put("email: ", responseObj.getMail());
         map.put("id", responseObj.getId().toString());
         map.put("message", message);
         map.put("status", status.value());
