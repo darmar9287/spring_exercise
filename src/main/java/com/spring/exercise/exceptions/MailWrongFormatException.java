@@ -7,11 +7,11 @@ import org.springframework.validation.Errors;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PasswordException extends CustomExceptions {
+public class MailWrongFormatException extends CustomExceptions {
     Errors errors;
 
-    public PasswordException(Errors errors) {
-        super(400, AppStringContainer.PASSWORD_SIZE_ERROR);
+    public MailWrongFormatException(Errors errors) {
+        super(400, AppStringContainer.EMAIL_FORMAT_ERROR);
         this.errors = errors;
     }
 

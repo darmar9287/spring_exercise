@@ -1,13 +1,9 @@
 package com.spring.exercise.exceptions;
 
-import com.spring.exercise.utils.AppStringContainer;
 import com.spring.exercise.utils.ErrorPojo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
 
 import java.util.List;
 import java.util.Map;
@@ -18,9 +14,7 @@ public abstract class CustomExceptions extends RuntimeException {
 
     final int statusCode;
     String message;
-    //String field;
 
-    //zaimplementowac w podklasie wyjatku i zbudowca json
     abstract public List<ErrorPojo> serializeErrors();
 
     public static ResponseEntity<?> handleCustomException(CustomExceptions ex) {

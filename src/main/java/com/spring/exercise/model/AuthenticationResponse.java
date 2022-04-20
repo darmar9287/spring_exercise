@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -15,7 +14,7 @@ public class AuthenticationResponse {
 
     public static ResponseEntity<Object> generateResponse(String message, HttpStatus status, UserModel responseObj) {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("email: ", responseObj.getMail());
+        map.put("user: ", responseObj.getUserName());
         map.put("id", responseObj.getId().toString());
         map.put("message", message);
         map.put("status", status.value());

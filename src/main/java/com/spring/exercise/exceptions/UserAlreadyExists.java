@@ -2,8 +2,6 @@ package com.spring.exercise.exceptions;
 
 import com.spring.exercise.utils.AppStringContainer;
 import com.spring.exercise.utils.ErrorPojo;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.validation.Errors;
 
 import java.util.List;

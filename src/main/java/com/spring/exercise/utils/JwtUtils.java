@@ -3,35 +3,36 @@ package com.spring.exercise.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 @Component
 public class JwtUtils {
-    //not secure neither secret itself nor storing here
-    //just for exercise purpose
-    private static final String SECRET_KEY = "maslo";
 
-    public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        return  createToken(claims, userDetails.getUsername());
-    }
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        String userMail = extractUsermail(token);
+        String userMail = extractUsername(token);
         return userMail.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    public String generateToken(Authentication authentication) {
+
         Date now = new Date(System.currentTimeMillis());
+        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date until = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10);
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(now).setExpiration(until)
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+        return Jwts.builder()
+                .setSubject((userPrincipal.getUsername()))
+                .setIssuedAt(new Date())
+                .setExpiration(until)
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                .compact();
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -43,9 +44,14 @@ public class JwtUtils {
         return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
     }
 
-    public String extractUsermail(String token) {
+    public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+
+    public String getUserNameFromJwtToken(String token) {
+        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody().getSubject();
+    }
+
 
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
