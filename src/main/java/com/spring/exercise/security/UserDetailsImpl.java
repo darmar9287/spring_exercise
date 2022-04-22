@@ -36,7 +36,6 @@ public class UserDetailsImpl implements UserDetails {
                 user.get().getPassword());
     }
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;

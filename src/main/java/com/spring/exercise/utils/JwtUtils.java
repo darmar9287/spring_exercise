@@ -1,6 +1,5 @@
 package com.spring.exercise.utils;
 
-import com.spring.exercise.model.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -17,23 +16,23 @@ public class JwtUtils {
 
     private String secretKey;
 
-    public JwtUtils(@Value("${jwt.secret}")String secretKey) {
+    public JwtUtils(@Value ("${jwt.secret}")String secretKey) {
         this.secretKey = secretKey;
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String userMail = extractUsername(userDetails.getUsername());
-        return userMail.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public boolean validateToken(String token, String username) {
+        String userMail = extractUsername(username);
+        return userMail.equals(username) && !isTokenExpired(token);
     }
 
-    public String generateToken(Authentication authentication, UserEntity user) {
+    public String generateToken(Authentication authentication, String userId) {
 
         Date now = new Date(System.currentTimeMillis());
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date until = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10);
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
-                .setId(user.getId())
+                .setId(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(until)
                 .signWith(SignatureAlgorithm.HS512, secretKey)

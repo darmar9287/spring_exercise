@@ -1,12 +1,13 @@
 package com.spring.exercise.service;
 
+import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.controller.model.AuthResponse;
 import com.spring.exercise.exceptions.InvalidCredentialsException;
-import com.spring.exercise.exceptions.UserAlreadyExists;
+import com.spring.exercise.exceptions.InvalidUserInputException;
+import com.spring.exercise.exceptions.UserAlreadyExistsException;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.security.UserDetailsImpl;
-import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +43,9 @@ public class UserServiceImpl implements UserDetailsService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-
     public UserEntity createUser(UserEntity user, Errors errors) {
         if (userRepository.findByUserName(user.getUserName()).isPresent()) {
-            throw new UserAlreadyExists(errors);
+            throw new UserAlreadyExistsException(errors);
         }
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userRepository.save(user);
@@ -55,37 +55,41 @@ public class UserServiceImpl implements UserDetailsService {
     public String createRegisterJwt(UserEntity user) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword()));
-        return jwtUtils.generateToken(authentication, user);
+        return jwtUtils.generateToken(authentication, user.getId());
     }
 
-    public String createLoginJwt(UserEntity user) {
+    public String createLoginJwt(AuthRequest authRequest) {
+
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword()));
+                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (AuthenticationException e) {
-            throw new InvalidCredentialsException(AppMessages.INCORRECT_CREDENTIALS_ERROR);
+            throw new InvalidCredentialsException();
         }
-        return jwtUtils.generateToken(authentication, user);
+        Optional<UserEntity> user = getUserFromDB(authRequest.getUsername());
+        return jwtUtils.generateToken(authentication, user.get().getId());
     }
 
     public Map<String, Object> generateResponse(UserEntity user) {
         return AuthResponse.generateResponse(user);
     }
 
-    public boolean checkIfUserExistsInDb(String username) {
-        return userRepository.findByUserName(username) != null;
-    }
-
-    private boolean checkIfPasswordMatchRequirements(String pass) {
-        return pass.length() >= 4 && pass.length() <= 20;
+    public void checkIfCredentialsAreCorrect(Errors errors) {
+        if (errors.hasErrors()) {
+            throw new InvalidUserInputException(400, errors);
+        }
     }
 
     @Override
     public UserDetails loadUserByUsername(String userName) {
         Optional<UserEntity> user = userRepository.findByUserName(userName);
         return UserDetailsImpl.build(user);
+    }
+
+    public Optional<UserEntity> getUserFromDB(String username) {
+        return userRepository.findByUserName(username);
     }
 
 }

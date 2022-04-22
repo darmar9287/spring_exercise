@@ -6,14 +6,13 @@ import org.springframework.validation.Errors;
 
 import java.util.List;
 
-public class UserAlreadyExists extends CustomExceptions {
+public class UserAlreadyExistsException extends CustomExceptions {
 
     private final static String error = AppMessages.EMAIL_EXISTS_ERROR;
 
-    public UserAlreadyExists(Errors errors) {
-        super(401, errors);
+    public UserAlreadyExistsException(Errors errors) {
+        super(401);
     }
-
 
     @Override
     public List<ErrorResponse> serializeErrors() {

@@ -24,6 +24,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JwtFilterRequest extends OncePerRequestFilter {
 
+    private static final int BEARER_SUBSTRING_LENGTH = 7;
+
     @Autowired
     private JwtUtils jwtUtils;
 
@@ -52,7 +54,7 @@ public class JwtFilterRequest extends OncePerRequestFilter {
         String headerAuth = request.getHeader("Authorization");
 
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return Optional.of(headerAuth.substring(7));
+            return Optional.of(headerAuth.substring(BEARER_SUBSTRING_LENGTH));
         }
 
         return Optional.ofNullable(headerAuth);

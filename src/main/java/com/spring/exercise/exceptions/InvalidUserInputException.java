@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 
 public class InvalidUserInputException extends CustomExceptions {
 
+    private Errors errors;
 
     public InvalidUserInputException(int statusCode, Errors errors) {
-        super(statusCode, errors);
+        super(statusCode);
+        this.errors = errors;
     }
 
     @Override

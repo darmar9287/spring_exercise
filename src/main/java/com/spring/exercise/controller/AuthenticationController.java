@@ -1,7 +1,6 @@
 package com.spring.exercise.controller;
 
 import com.spring.exercise.controller.model.AuthRequest;
-import com.spring.exercise.exceptions.InvalidUserInputException;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +29,12 @@ public class AuthenticationController {
     private ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
         String username = authRequest.getUsername();
         String password = authRequest.getPassword();
-        checkIfCredentialsAreCorrect(errors);
+        userServiceImpl.checkIfCredentialsAreCorrect(errors);
 
         UserEntity result = new UserEntity(username, password);
         userServiceImpl.createUser(result, errors);
 
-        UserEntity user = new UserEntity(username, password);
+        UserEntity user = new UserEntity(result.getId(),username, password);
         String jwt = userServiceImpl.createRegisterJwt(user);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authorization", "Bearer " + jwt);
@@ -48,22 +47,11 @@ public class AuthenticationController {
 
     @PostMapping("/sign_in")
     private ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
-
-        String username = authRequest.getUsername();
-        String password = authRequest.getPassword();
-        checkIfCredentialsAreCorrect(errors);
-        UserEntity user = new UserEntity(username, password);
-
-        String jwt = userServiceImpl.createLoginJwt(user);
+        userServiceImpl.checkIfCredentialsAreCorrect(errors);
+        String jwt = userServiceImpl.createLoginJwt(authRequest);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authorization", "Bearer " + jwt);
 
         return ResponseEntity.ok().headers(responseHeaders).build();
-    }
-
-    private void checkIfCredentialsAreCorrect(Errors errors) {
-        if (errors.hasErrors()) {
-            throw new InvalidUserInputException(400, errors);
-        }
     }
 }
