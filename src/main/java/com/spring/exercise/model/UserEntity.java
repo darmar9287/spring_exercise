@@ -1,12 +1,10 @@
 package com.spring.exercise.model;
 
-import com.spring.exercise.utils.AppStringContainer;
-import com.spring.exercise.utils.UniqueMail;
+import com.spring.exercise.utils.AppMessages;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,22 +16,20 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserModel {
+public class UserEntity {
 
     @Id
-    private ObjectId id;
+    private String id;
 
     @Indexed(unique = true)
-    @Email(message = AppStringContainer.EMAIL_FORMAT_ERROR)
-    @UniqueMail
+    @Email(message = AppMessages.EMAIL_FORMAT_ERROR)
     private String userName;
     @NonNull
-    @Size(min = 4, max = 20, message = AppStringContainer.PASSWORD_SIZE_ERROR)
+    @Size(min = 4, max = 20, message = AppMessages.PASSWORD_SIZE_ERROR)
     private String password;
 
-    public UserModel(String userName, String password) {
+    public UserEntity(String userName, String password) {
         this.userName = userName;
         this.password = password;
     }
-
 }

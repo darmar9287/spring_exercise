@@ -1,6 +1,6 @@
 package com.spring.exercise.utils;
 
-public class AppStringContainer {
+public class AppMessages {
 
     public static final String EMAIL_EXISTS_ERROR = "Email in use";
 

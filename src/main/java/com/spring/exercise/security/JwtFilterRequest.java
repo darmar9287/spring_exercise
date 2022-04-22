@@ -2,6 +2,7 @@ package com.spring.exercise.security;
 
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,9 +17,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class JwtFilterRequest extends OncePerRequestFilter {
 
     @Autowired
@@ -28,15 +31,16 @@ public class JwtFilterRequest extends OncePerRequestFilter {
     private UserServiceImpl userServiceImpl;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String userName = null;
-        String jwtToken = parseJwt(request);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        if (jwtToken != null) {
-            userName = jwtUtils.extractUsername(jwtToken);
+        Optional<String> jwtToken = parseJwt(request);
+
+        if (jwtToken.isPresent()) {
+            String userName = jwtUtils.extractUsername(jwtToken.get());
             UserDetails userDetails = userServiceImpl.loadUserByUsername(userName);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-                    new ArrayList<>());
+                    Collections.emptyList());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
@@ -44,14 +48,14 @@ public class JwtFilterRequest extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String parseJwt(HttpServletRequest request) {
+    private Optional<String> parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
 
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
+            return Optional.of(headerAuth.substring(7));
         }
 
-        return null;
+        return Optional.ofNullable(headerAuth);
     }
 
 }
