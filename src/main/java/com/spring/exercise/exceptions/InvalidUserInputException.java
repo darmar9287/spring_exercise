@@ -10,8 +10,8 @@ public class InvalidUserInputException extends CustomExceptions {
 
     private Errors errors;
 
-    public InvalidUserInputException(int statusCode, Errors errors) {
-        super(statusCode);
+    public InvalidUserInputException(Errors errors) {
+        super(400);
         this.errors = errors;
     }
 

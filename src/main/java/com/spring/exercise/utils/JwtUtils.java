@@ -16,7 +16,7 @@ public class JwtUtils {
 
     private String secretKey;
 
-    public JwtUtils(@Value ("${jwt.secret}")String secretKey) {
+    public JwtUtils(@Value("${jwt.secret}") String secretKey) {
         this.secretKey = secretKey;
     }
 
@@ -27,7 +27,6 @@ public class JwtUtils {
 
     public String generateToken(Authentication authentication, String userId) {
 
-        Date now = new Date(System.currentTimeMillis());
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date until = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10);
         return Jwts.builder()
@@ -52,11 +51,6 @@ public class JwtUtils {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
-    }
-
-
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -64,5 +58,4 @@ public class JwtUtils {
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-
 }

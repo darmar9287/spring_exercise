@@ -3,13 +3,10 @@ package com.spring.exercise.security;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,18 +18,14 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 
-@Component
 @RequiredArgsConstructor
 public class JwtFilterRequest extends OncePerRequestFilter {
 
     private static final int BEARER_SUBSTRING_LENGTH = 7;
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    @Lazy
-    private UserServiceImpl userServiceImpl;
+    private final UserServiceImpl userServiceImpl;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

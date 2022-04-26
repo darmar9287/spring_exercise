@@ -3,10 +3,12 @@ package com.spring.exercise.configuration;
 import com.spring.exercise.security.AuthEntryPointJwt;
 import com.spring.exercise.security.JwtFilterRequest;
 import com.spring.exercise.service.UserServiceImpl;
+import com.spring.exercise.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -23,23 +25,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
     private UserServiceImpl userServiceImpl;
 
-    @Autowired
-    private JwtFilterRequest jwtFilterRequest;
-
-    @Bean
-    public JwtFilterRequest authenticationJwtTokenFilter() {
-        return new JwtFilterRequest();
-    }
-
-    @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
+    private final JwtUtils jwtUtils;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Lazy
+    @Autowired
+    public void setUserService(UserServiceImpl userService) {
+        this.userServiceImpl = userService;
     }
 
     @Override
@@ -50,10 +48,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().
-                exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+                exceptionHandling().authenticationEntryPoint(new AuthEntryPointJwt())
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().authorizeRequests().anyRequest().permitAll();
-        http.addFilterBefore(jwtFilterRequest, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtFilterRequest(jwtUtils, userServiceImpl), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

@@ -4,7 +4,6 @@ import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.controller.model.AuthResponse;
 import com.spring.exercise.controller.model.UserDTO;
 import com.spring.exercise.exceptions.InvalidCredentialsException;
-import com.spring.exercise.exceptions.InvalidUserInputException;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
@@ -20,7 +19,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
 
 import java.util.Optional;
 
@@ -33,9 +31,9 @@ public class UserServiceImpl implements UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public UserDTO createUser(AuthRequest authRequest, Errors errors) {
+    public UserDTO createUser(AuthRequest authRequest) {
         if (userRepository.findByUserName(authRequest.getUsername()).isPresent()) {
-            throw new UserAlreadyExistsException(errors);
+            throw new UserAlreadyExistsException();
         }
         final var userEntity = new UserEntity();
         userEntity.setUserName(authRequest.getUsername());
@@ -60,17 +58,12 @@ public class UserServiceImpl implements UserDetailsService {
             throw new InvalidCredentialsException();
         }
         Optional<UserEntity> user = getUserFromDB(authRequest.getUsername());
+
         return jwtUtils.generateToken(authentication, user.get().getId());
     }
 
     public AuthResponse generateResponse(UserDTO user) {
         return AuthResponse.mapFromDTO(user);
-    }
-
-    public void checkIfCredentialsAreCorrect(Errors errors) {
-        if (errors.hasErrors()) {
-            throw new InvalidUserInputException(400, errors);
-        }
     }
 
     @Override
@@ -79,7 +72,7 @@ public class UserServiceImpl implements UserDetailsService {
         return UserDetailsImpl.build(user);
     }
 
-    public Optional<UserEntity> getUserFromDB(String username) {
+    private Optional<UserEntity> getUserFromDB(String username) {
         return userRepository.findByUserName(username);
     }
 }

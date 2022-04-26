@@ -9,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 public class UserDTO {
 
     private final String id;
-
     private final String userName;
-
     private final String jwt;
 
     public static UserDTO mapFromEntity(UserEntity userEntity, String jwt) {

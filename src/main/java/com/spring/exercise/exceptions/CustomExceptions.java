@@ -27,6 +27,4 @@ public abstract class CustomExceptions extends RuntimeException {
     public static ResponseEntity<?> handleCustomException(CustomExceptions ex) {
         return ResponseEntity.status(ex.getStatusCode()).body(Map.of("errors", ex.serializeErrors()));
     }
-
-
 }

@@ -7,10 +7,8 @@ import java.util.List;
 
 public class InvalidCredentialsException extends CustomExceptions {
 
-
     public InvalidCredentialsException() {
        super(AppMessages.INCORRECT_CREDENTIALS_ERROR, 401);
-
     }
 
     @Override

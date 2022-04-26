@@ -25,9 +25,4 @@ public class UserEntity {
     @NonNull
     @Size(min = 4, max = 20, message = AppMessages.PASSWORD_SIZE_ERROR)
     private String password;
-
-    public UserEntity(String userName, String password) {
-        this.userName = userName;
-        this.password = password;
-    }
 }
