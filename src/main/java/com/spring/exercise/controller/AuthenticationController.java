@@ -1,82 +1,47 @@
 package com.spring.exercise.controller;
 
-import com.spring.exercise.Payload.Request.AuthRequest;
-import com.spring.exercise.exceptions.InvalidLoginCredentialsException;
-import com.spring.exercise.model.UserModel;
+import com.spring.exercise.controller.model.AuthRequest;
+import com.spring.exercise.controller.model.UserDTO;
 import com.spring.exercise.service.UserServiceImpl;
-import com.spring.exercise.utils.JwtUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.spring.exercise.utils.RequestBodyValidator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/users")
 public class AuthenticationController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserServiceImpl userServiceImpl;
-
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final UserServiceImpl userServiceImpl;
 
     @PostMapping(value = "/sign_up", produces = "application/json;charset=UTF-8")
     private ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
-        String username = authRequest.getUsername();
-        String password = authRequest.getPassword();
-
-        userServiceImpl.validateUserCredentials(true, username, password, errors);
-        UserModel user = new UserModel(authRequest.getUsername(), authRequest.getPassword());
-        UserModel result = userServiceImpl.createUser(user);
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password));
-        String jwt = jwtUtils.generateToken(authentication);
+        RequestBodyValidator.check(errors);
+        UserDTO result = userServiceImpl.createUser(authRequest);
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Authorization", "Bearer " + jwt);
+        responseHeaders.set("Authorization", "Bearer " + result.getJwt());
 
-        Map<String, Object> responseMap = new HashMap<>();
-        responseMap.put("email", result.getUserName());
-        responseMap.put("id", result.getId());
+        final var response = userServiceImpl.generateResponse(result);
         return ResponseEntity.ok()
                 .headers(responseHeaders)
-                .body(responseMap);
+                .body(response);
     }
 
     @PostMapping("/sign_in")
-    private ResponseEntity<?> login(@RequestBody AuthRequest authRequest, Errors errors) {
+    private ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
+        RequestBodyValidator.check(errors);
+        String jwt = userServiceImpl.createLoginJwt(authRequest);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Authorization", "Bearer " + jwt);
 
-        String username = authRequest.getUsername();
-        String password = authRequest.getPassword();
-        userServiceImpl.validateUserCredentials(false, username, password, errors);
-
-        Authentication authentication = null;
-        HttpHeaders responseHeaders = null;
-        try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password));
-            String jwt = jwtUtils.generateToken(authentication);
-            responseHeaders = new HttpHeaders();
-            responseHeaders.set("Authorization", "Bearer " + jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (AuthenticationException e) {
-            throw new InvalidLoginCredentialsException();
-        }
-
-        return ResponseEntity.ok().headers(responseHeaders).body("");
+        return ResponseEntity.ok().headers(responseHeaders).build();
     }
 }

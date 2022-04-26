@@ -1,66 +1,78 @@
 package com.spring.exercise.service;
 
-import com.spring.exercise.exceptions.MailWrongFormatException;
-import com.spring.exercise.exceptions.PasswordException;
-import com.spring.exercise.exceptions.UserAlreadyExists;
-import com.spring.exercise.model.UserModel;
+import com.spring.exercise.controller.model.AuthRequest;
+import com.spring.exercise.controller.model.AuthResponse;
+import com.spring.exercise.controller.model.UserDTO;
+import com.spring.exercise.exceptions.InvalidCredentialsException;
+import com.spring.exercise.exceptions.UserAlreadyExistsException;
+import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.security.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.spring.exercise.utils.JwtUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final JwtUtils jwtUtils;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    public UserDTO createUser(AuthRequest authRequest) {
+        if (userRepository.findByUserName(authRequest.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException();
+        }
+        final var userEntity = new UserEntity();
+        userEntity.setUserName(authRequest.getUsername());
+        userEntity.setPassword(bCryptPasswordEncoder.encode(authRequest.getPassword()));
+        userRepository.save(userEntity);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        final var jwt = jwtUtils.generateToken(authentication, userEntity.getId());
+
+        return UserDTO.mapFromEntity(userEntity, jwt);
+    }
+
+
+    public String createLoginJwt(AuthRequest authRequest) {
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (AuthenticationException e) {
+            throw new InvalidCredentialsException();
+        }
+        Optional<UserEntity> user = getUserFromDB(authRequest.getUsername());
+
+        return jwtUtils.generateToken(authentication, user.get().getId());
+    }
+
+    public AuthResponse generateResponse(UserDTO user) {
+        return AuthResponse.mapFromDTO(user);
+    }
 
     @Override
     public UserDetails loadUserByUsername(String userName) {
-        UserModel user = userRepository.findByUserName(userName);
+        Optional<UserEntity> user = userRepository.findByUserName(userName);
         return UserDetailsImpl.build(user);
     }
 
-    public UserModel createUser(UserModel user) {
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return user;
-    }
-
-    public void validateUserCredentials(boolean shouldVerifyUserExists, String username, String password, Errors errors) {
-        if (!checkIfPasswordMatchRequirements(password)) {
-            throw new PasswordException(errors);
-        }
-        if(shouldVerifyUserExists && checkIfUserExistsInDb(username)) {
-            throw new UserAlreadyExists(errors);
-        }
-        if(!checkIfMailIsWellFormed(username)) {
-            throw new MailWrongFormatException(errors);
-        }
-    }
-
-    private boolean checkIfMailIsWellFormed(String mail) {
-        String patternString =  "^(.+)@(\\S+)$";
-        Pattern pattern = Pattern.compile(patternString);
-        Matcher matcher = pattern.matcher(mail);
-        return matcher.matches();
-    }
-
-    public boolean checkIfUserExistsInDb(String username) {
-        return userRepository.findByUserName(username) != null;
-    }
-
-    private boolean checkIfPasswordMatchRequirements(String pass) {
-        return pass.length() >=4 && pass.length() <= 20;
+    private Optional<UserEntity> getUserFromDB(String username) {
+        return userRepository.findByUserName(username);
     }
 }

@@ -1,10 +1,10 @@
 package com.spring.exercise.repository;
 
-import com.spring.exercise.model.UserModel;
-import org.bson.types.ObjectId;
+import com.spring.exercise.model.UserEntity;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface UserRepository extends MongoRepository<UserModel, ObjectId> {
+import java.util.Optional;
 
-    UserModel findByUserName(String userName);
+public interface UserRepository extends MongoRepository<UserEntity, String> {
+    Optional<UserEntity> findByUserName(String username);
 }

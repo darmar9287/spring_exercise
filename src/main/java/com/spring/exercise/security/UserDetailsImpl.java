@@ -1,39 +1,39 @@
 package com.spring.exercise.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.spring.exercise.model.UserModel;
+import com.spring.exercise.model.UserEntity;
 import lombok.Getter;
 import lombok.Setter;
-import org.bson.types.ObjectId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Getter
 @Setter
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
-    private ObjectId id;
+    private String id;
 
     private String userName;
 
     @JsonIgnore
     private String password;
 
-    public UserDetailsImpl(ObjectId id, String userName, String password) {
+    public UserDetailsImpl(String id, String userName, String password) {
         this.id = id;
         this.userName = userName;
         this.password = password;
     }
 
-    public static UserDetailsImpl build(UserModel user) {
+    public static UserDetailsImpl build(Optional<UserEntity> user) {
 
         return new UserDetailsImpl(
-                user.getId(),
-                user.getUserName(),
-                user.getPassword());
+                user.get().getId(),
+                user.get().getUserName(),
+                user.get().getPassword());
     }
 
     @Override

@@ -14,24 +14,27 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret}")
-    private String SECRET_KEY;
+    private String secretKey;
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        String userMail = extractUsername(token);
-        return userMail.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public JwtUtils(@Value("${jwt.secret}") String secretKey) {
+        this.secretKey = secretKey;
     }
 
-    public String generateToken(Authentication authentication) {
+    public boolean validateToken(String token, String username) {
+        String userMail = extractUsername(username);
+        return userMail.equals(username) && !isTokenExpired(token);
+    }
 
-        Date now = new Date(System.currentTimeMillis());
+    public String generateToken(Authentication authentication, String userId) {
+
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date until = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10);
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
+                .setId(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(until)
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS512, secretKey)
                 .compact();
     }
 
@@ -41,17 +44,12 @@ public class JwtUtils {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
     }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
-
-    public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody().getSubject();
-    }
-
 
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
@@ -60,5 +58,4 @@ public class JwtUtils {
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-
 }
