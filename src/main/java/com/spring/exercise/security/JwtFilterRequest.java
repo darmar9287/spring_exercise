@@ -4,6 +4,7 @@ import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +31,7 @@ public class JwtFilterRequest extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
+    @Lazy
     private UserServiceImpl userServiceImpl;
 
     @Override

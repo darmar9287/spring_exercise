@@ -1,7 +1,7 @@
 package com.spring.exercise.controller;
 
 import com.spring.exercise.controller.model.AuthRequest;
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.controller.model.UserDTO;
 import com.spring.exercise.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,25 +23,17 @@ public class AuthenticationController {
     @Autowired
     private UserServiceImpl userServiceImpl;
 
-
     @PostMapping(value = "/sign_up", produces = "application/json;charset=UTF-8")
     private ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
-        String username = authRequest.getUsername();
-        String password = authRequest.getPassword();
         userServiceImpl.checkIfCredentialsAreCorrect(errors);
-
-        UserEntity result = new UserEntity(username, password);
-        userServiceImpl.createUser(result, errors);
-
-        UserEntity user = new UserEntity(result.getId(),username, password);
-        String jwt = userServiceImpl.createRegisterJwt(user);
+        UserDTO result = userServiceImpl.createUser(authRequest, errors);
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Authorization", "Bearer " + jwt);
+        responseHeaders.set("Authorization", "Bearer " + result.getJwt());
 
-        Map<String, Object> responseMap = userServiceImpl.generateResponse(result);
+        final var response = userServiceImpl.generateResponse(result);
         return ResponseEntity.ok()
                 .headers(responseHeaders)
-                .body(responseMap);
+                .body(response);
     }
 
     @PostMapping("/sign_in")

@@ -1,14 +1,12 @@
 package com.spring.exercise.exceptions;
 
 import com.spring.exercise.utils.ErrorResponse;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
 
-@AllArgsConstructor
 @Getter
 public abstract class CustomExceptions extends RuntimeException {
 
@@ -16,6 +14,11 @@ public abstract class CustomExceptions extends RuntimeException {
 
     public CustomExceptions(String message, int statusCode) {
         super(message);
+        this.statusCode = statusCode;
+    }
+
+    public CustomExceptions(int statusCode) {
+        super();
         this.statusCode = statusCode;
     }
 
