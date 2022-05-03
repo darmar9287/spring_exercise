@@ -3,6 +3,7 @@ package com.spring.exercise.security;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.spring.exercise.model.UserEntity;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
@@ -29,7 +31,6 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public static UserDetailsImpl build(Optional<UserEntity> user) {
-
         return new UserDetailsImpl(
                 user.get().getId(),
                 user.get().getUserName(),

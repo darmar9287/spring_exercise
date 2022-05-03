@@ -17,7 +17,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserDetailsService {
 
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final PasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
 
     public UserDTO createUser(AuthRequest authRequest) {
@@ -48,7 +48,6 @@ public class UserServiceImpl implements UserDetailsService {
 
 
     public String createLoginJwt(AuthRequest authRequest) {
-
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
