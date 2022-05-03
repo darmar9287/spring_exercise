@@ -99,14 +99,10 @@ public class UserServiceTests {
 
     @Test
     public void shouldReturnUserDetailsWhenUsernameProvided() {
-;
         //when
         when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.of(user));
         //then
         UserDetails userDetails = userService.loadUserByUsername(user.getUserName());
-        assertThat(userDetails.getUsername().equals("marek@gmail.com"));
-
-
+        assertThat(userDetails.getUsername().equals("marek@gmail.com") && userDetails.getPassword().equals("pass"));
     }
-
 }
