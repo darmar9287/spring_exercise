@@ -1,4 +1,4 @@
-package com.spring.exercise.unittests;
+package com.spring.exercise.unittests.service;
 
 import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.controller.model.UserDTO;
@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -63,7 +64,7 @@ public class UserServiceTests {
         when(userRepository.findByUserName((user.getUserName()))).thenReturn(Optional.of(user));
         UserDetails fetchedUser = userService.loadUserByUsername(user.getUserName());
         //then
-        assertThat(fetchedUser.getUsername()).isEqualTo(user.getUserName());
+        assertTrue(fetchedUser.getUsername().equals(user.getUserName()));
     }
 
     @Test
@@ -73,7 +74,7 @@ public class UserServiceTests {
         when(passwordEncoder.encode("pass")).thenReturn("pass");
         //then
         UserDTO createdUser = userService.createUser(request);
-        assertThat(createdUser.getUserName()).isEqualTo(user.getUserName());
+        assertTrue(createdUser.getUserName().equals(user.getUserName()));
     }
 
     @Test
@@ -94,7 +95,7 @@ public class UserServiceTests {
         when(jwtUtils.generateToken(any(), any())).thenReturn(exampleJwt);
         //then
         String jwt = userService.createLoginJwt(request);
-        assertThat(!jwt.isEmpty());
+        assertTrue(!jwt.isEmpty());
     }
 
     @Test
