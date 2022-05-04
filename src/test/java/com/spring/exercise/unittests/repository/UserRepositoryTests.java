@@ -2,6 +2,7 @@ package com.spring.exercise.unittests.repository;
 
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -23,13 +25,15 @@ public class UserRepositoryTests {
 
     private UserEntity user;
 
+    private final static String USER_NAME = "marek_test@gmail.com";
+    private final static String USER_PASS = "pass";
 
     @BeforeEach
     public void dataSetup() {
         user = new UserEntity();
-        user.setUserName("marek_test@gmail.com");
-        user.setId("1");
-        user.setPassword("pass");
+        user.setId(ObjectId.get().toString());
+        user.setUserName(USER_NAME);
+        user.setPassword(USER_PASS);
     }
 
 
@@ -39,7 +43,7 @@ public class UserRepositoryTests {
         UserEntity savedUser = userRepository.save(user);
         //then
         Optional<UserEntity> fetchedUser = userRepository.findByUserName(savedUser.getUserName());
-        assertTrue(savedUser.getUserName().equals(fetchedUser.get().getUserName()));
+        assertEquals(savedUser.getUserName(), fetchedUser.get().getUserName());
     }
 
     @Test

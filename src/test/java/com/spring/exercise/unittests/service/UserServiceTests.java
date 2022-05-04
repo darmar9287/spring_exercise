@@ -7,6 +7,7 @@ import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,16 +47,19 @@ public class UserServiceTests {
 
     private AuthRequest request;
 
+    private final static String USER_NAME = "marek_test@gmail.com";
+    private final static String USER_PASS = "pass";
+
     public UserServiceTests() { }
 
     @BeforeEach
     public void setUp() {
         user = new UserEntity();
-        user.setUserName("marek@gmail.com");
-        user.setId("1");
-        user.setPassword("pass");
+        user.setId(ObjectId.get().toString());
+        user.setUserName(USER_NAME);
+        user.setPassword(USER_PASS);
 
-        request = new AuthRequest("marek@gmail.com", "pass");
+        request = new AuthRequest(USER_NAME, USER_PASS);
     }
 
     @Test
@@ -64,7 +68,7 @@ public class UserServiceTests {
         when(userRepository.findByUserName((user.getUserName()))).thenReturn(Optional.of(user));
         UserDetails fetchedUser = userService.loadUserByUsername(user.getUserName());
         //then
-        assertTrue(fetchedUser.getUsername().equals(user.getUserName()));
+        assertEquals(fetchedUser.getUsername(), (user.getUserName()));
     }
 
     @Test
@@ -74,7 +78,7 @@ public class UserServiceTests {
         when(passwordEncoder.encode("pass")).thenReturn("pass");
         //then
         UserDTO createdUser = userService.createUser(request);
-        assertTrue(createdUser.getUserName().equals(user.getUserName()));
+        assertEquals(createdUser.getUserName(), (user.getUserName()));
     }
 
     @Test
@@ -104,6 +108,7 @@ public class UserServiceTests {
         when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.of(user));
         //then
         UserDetails userDetails = userService.loadUserByUsername(user.getUserName());
-        assertThat(userDetails.getUsername().equals("marek@gmail.com") && userDetails.getPassword().equals("pass"));
+        assertEquals(userDetails.getUsername(), (USER_NAME));
+        assertEquals(userDetails.getPassword(), (USER_PASS));
     }
 }
