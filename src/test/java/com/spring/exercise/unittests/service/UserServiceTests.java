@@ -68,17 +68,17 @@ public class UserServiceTests {
         when(userRepository.findByUserName((user.getUserName()))).thenReturn(Optional.of(user));
         UserDetails fetchedUser = userService.loadUserByUsername(user.getUserName());
         //then
-        assertEquals(fetchedUser.getUsername(), (user.getUserName()));
+        assertEquals(fetchedUser.getUsername(), user.getUserName());
     }
 
     @Test
     void shouldSuccessWhenCreateUserWithCorrectCredentials() {
         //when
         when(userRepository.save(user)).thenReturn(user);
-        when(passwordEncoder.encode("pass")).thenReturn("pass");
+        when(passwordEncoder.encode(USER_PASS)).thenReturn(USER_PASS);
         //then
         UserDTO createdUser = userService.createUser(request);
-        assertEquals(createdUser.getUserName(), (user.getUserName()));
+        assertEquals(createdUser.getUserName(), USER_NAME);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class UserServiceTests {
         when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.of(user));
         //then
         UserDetails userDetails = userService.loadUserByUsername(user.getUserName());
-        assertEquals(userDetails.getUsername(), (USER_NAME));
-        assertEquals(userDetails.getPassword(), (USER_PASS));
+        assertEquals(userDetails.getUsername(), USER_NAME);
+        assertEquals(userDetails.getPassword(), USER_PASS);
     }
 }
