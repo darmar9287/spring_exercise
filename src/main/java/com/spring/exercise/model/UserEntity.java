@@ -32,7 +32,7 @@ public class UserEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserEntity user = (UserEntity) o;
-        return userName.equals(user.getId()) && password.equals(user.getId());
+        return id.equals(user.getId());
     }
 
     @Override
