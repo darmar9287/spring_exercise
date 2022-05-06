@@ -15,6 +15,8 @@ import java.util.function.Function;
 public class JwtUtils {
 
     private String secretKey;
+    public String sub;
+    public String jti;
 
     public JwtUtils(@Value("${jwt.secret}") String secretKey) {
         this.secretKey = secretKey;
@@ -26,7 +28,6 @@ public class JwtUtils {
     }
 
     public String generateToken(Authentication authentication, String userId) {
-
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date until = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10);
         return Jwts.builder()
@@ -49,6 +50,10 @@ public class JwtUtils {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractId(String token) {
+        return extractClaim(token, Claims::getId);
     }
 
     public Date extractExpiration(String token) {
