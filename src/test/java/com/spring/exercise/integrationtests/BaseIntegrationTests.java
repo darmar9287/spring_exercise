@@ -27,7 +27,6 @@ public class BaseIntegrationTests {
                 .andReturn();
     }
 
-
     protected static String mapToJson(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
@@ -35,7 +34,4 @@ public class BaseIntegrationTests {
             throw new RuntimeException(e);
         }
     }
-
-
-
 }
