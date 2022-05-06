@@ -5,7 +5,7 @@ import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
-import com.spring.exercise.utils.JwtDecoder;
+import com.spring.exercise.utils.JwtUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -22,7 +23,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
@@ -42,6 +42,9 @@ class AuthenticationIntegrationTests {
     private UserRepository userRepository;
     @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final static String USER_NAME = "marek_test@gmail.com";
     private final static String USER_PASSWORD = "pass";
@@ -75,13 +78,10 @@ class AuthenticationIntegrationTests {
         Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
         assertTrue(user.isPresent());
         assertEquals(authRequest.getUsername(), user.get().getUserName());
-
-        Pattern bcryptPattern = Pattern.compile("\\A\\$2a?\\$\\d\\d\\$[./0-9A-Za-z]{53}");
-        assertTrue(bcryptPattern.matcher(user.get().getPassword()).matches());
-
+        assertTrue(passwordEncoder.matches(USER_PASSWORD, user.get().getPassword()));
         int tokenIndexStart = 7;
         String token = result.getResponse().getHeader("Authorization").substring(tokenIndexStart);
-        JwtDecoder decodedJwt = JwtDecoder.decodeToken(token);
+        JwtUtils decodedJwt = JwtUtils.decodeToken(token);
         assertEquals(user.get().getUserName(), decodedJwt.sub);
         assertEquals(user.get().getId(), decodedJwt.jti);
     }

@@ -1,13 +1,16 @@
 package com.spring.exercise.utils;
 
+import com.google.gson.Gson;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -15,6 +18,8 @@ import java.util.function.Function;
 public class JwtUtils {
 
     private String secretKey;
+    public String sub;
+    public String jti;
 
     public JwtUtils(@Value("${jwt.secret}") String secretKey) {
         this.secretKey = secretKey;
@@ -56,5 +61,12 @@ public class JwtUtils {
 
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    public static JwtUtils decodeToken(String token) throws UnsupportedEncodingException {
+        String[] pieces = token.split("\\.");
+        String payload = pieces[1];
+        String jsonString = new String(Base64.decodeBase64(payload), "UTF-8");
+        return new Gson().fromJson(jsonString, JwtUtils.class);
     }
 }
