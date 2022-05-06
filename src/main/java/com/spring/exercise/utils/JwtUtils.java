@@ -26,7 +26,6 @@ public class JwtUtils {
     }
 
     public String generateToken(Authentication authentication, String userId) {
-
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date until = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10);
         return Jwts.builder()

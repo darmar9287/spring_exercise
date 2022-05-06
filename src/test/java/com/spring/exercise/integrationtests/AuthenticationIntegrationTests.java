@@ -5,6 +5,8 @@ import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
+import com.spring.exercise.utils.JwtDecoder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,16 +16,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -47,9 +53,14 @@ class AuthenticationIntegrationTests {
         authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
     }
 
+    @AfterEach
+    public void tearDown() {
+        userRepository.deleteAll();
+    }
+
     @Test
-    public void shouldReturnStatusOkWhenUserCreated() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders
+    public void shouldResponseWith200WhenUserCreated() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
                         .content(mapToJson(authRequest))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,18 +69,28 @@ class AuthenticationIntegrationTests {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
-                .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))));
+                .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))))
+                .andReturn();
 
         Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
         assertTrue(user.isPresent());
-        userRepository.delete(user.get());
+        assertEquals(authRequest.getUsername(), user.get().getUserName());
+
+        Pattern bcryptPattern = Pattern.compile("\\A\\$2a?\\$\\d\\d\\$[./0-9A-Za-z]{53}");
+        assertTrue(bcryptPattern.matcher(user.get().getPassword()).matches());
+
+        int tokenIndexStart = 7;
+        String token = result.getResponse().getHeader("Authorization").substring(tokenIndexStart);
+        JwtDecoder decodedJwt = JwtDecoder.decodeToken(token);
+        assertEquals(user.get().getUserName(), decodedJwt.sub);
+        assertEquals(user.get().getId(), decodedJwt.jti);
     }
 
     @Test
     public void shouldResponseWith401IfUserExists() throws Exception {
         userService.createUser(authRequest);
 
-        String errorResponse = "{\"errors\":[{\"message\":\"Email in use\"}]}";
+        String expectedErrorMessage = "Email in use";
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
                         .content(mapToJson(authRequest))
@@ -77,8 +98,7 @@ class AuthenticationIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors").exists())
-                .andExpect(content().json(errorResponse));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage));
     }
 
     @Test
@@ -86,8 +106,8 @@ class AuthenticationIntegrationTests {
         AuthRequest malformedRequest = new AuthRequest();
         malformedRequest.setUsername("marek_testgmail.com");
         malformedRequest.setPassword("pass");
+        String expectedErrorMessage = "Must be a well-formed email address";
 
-        String errorResponse = "{\"errors\":[{\"field\":\"username\",\"message\":\"Must be a well-formed email address\"}]}";
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
                         .content(mapToJson(malformedRequest))
@@ -95,8 +115,7 @@ class AuthenticationIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors").exists())
-                .andExpect(content().json(errorResponse));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage));
     }
 
     @Test
@@ -105,7 +124,7 @@ class AuthenticationIntegrationTests {
         malformedRequest.setUsername("marek_test@gmail.com");
         malformedRequest.setPassword("pas");
 
-        String errorResponse = "{\"errors\":[{\"field\":\"password\",\"message\":\"Size must be between 4 and 20\"}]}";
+        String expectedErrorMessage = "Size must be between 4 and 20";
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
                         .content(mapToJson(malformedRequest))
@@ -113,8 +132,7 @@ class AuthenticationIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors").exists())
-                .andExpect(content().json(errorResponse));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage));
     }
 
     private static String mapToJson(final Object obj) {
