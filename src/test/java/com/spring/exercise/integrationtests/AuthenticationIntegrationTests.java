@@ -42,13 +42,13 @@ class AuthenticationIntegrationTests {
     private UserRepository userRepository;
     @Autowired
     private UserServiceImpl userService;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtils jwtUtils;
 
     private final static String USER_NAME = "marek_test@gmail.com";
     private final static String USER_PASSWORD = "pass";
-
     private AuthRequest authRequest;
 
     @BeforeEach
@@ -81,9 +81,11 @@ class AuthenticationIntegrationTests {
         assertTrue(passwordEncoder.matches(USER_PASSWORD, user.get().getPassword()));
         int tokenIndexStart = 7;
         String token = result.getResponse().getHeader("Authorization").substring(tokenIndexStart);
-        JwtUtils decodedJwt = JwtUtils.decodeToken(token);
-        assertEquals(user.get().getUserName(), decodedJwt.sub);
-        assertEquals(user.get().getId(), decodedJwt.jti);
+        String extractedUserId = jwtUtils.extractId(token);
+        String extractedUsername = jwtUtils.extractUsername(token);
+
+        assertEquals(user.get().getUserName(),extractedUsername);
+        assertEquals(user.get().getId(), extractedUserId);
     }
 
     @Test
