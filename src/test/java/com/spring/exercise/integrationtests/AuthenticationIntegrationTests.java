@@ -1,7 +1,7 @@
 package com.spring.exercise.integrationtests;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.exercise.controller.model.AuthRequest;
+import com.spring.exercise.controller.model.UserDTO;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
@@ -34,8 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class AuthenticationIntegrationTests {
-
+class AuthenticationIntegrationTests extends BaseIntegrationTests{
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -49,6 +48,10 @@ class AuthenticationIntegrationTests {
 
     private final static String USER_NAME = "marek_test@gmail.com";
     private final static String USER_PASSWORD = "pass";
+    private final static String EMAIL_EXISTS_ERROR = "Email in use";
+    private final static String EMAIL_WRONG_FORMAT_ERROR = "Must be a well-formed email address";
+    private final static String PASSWORD_SIZE_ERROR = "Size must be between 4 and 20";
+    private final static String INCORRECT_CREDENTIALS_ERROR = "Invalid login credentials";
     private AuthRequest authRequest;
 
     @BeforeEach
@@ -92,7 +95,6 @@ class AuthenticationIntegrationTests {
     public void shouldResponseWith401IfUserExists() throws Exception {
         userService.createUser(authRequest);
 
-        String expectedErrorMessage = "Email in use";
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
                         .content(mapToJson(authRequest))
@@ -100,7 +102,7 @@ class AuthenticationIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_EXISTS_ERROR));
     }
 
     @Test
@@ -108,7 +110,6 @@ class AuthenticationIntegrationTests {
         AuthRequest malformedRequest = new AuthRequest();
         malformedRequest.setUsername("marek_testgmail.com");
         malformedRequest.setPassword("pass");
-        String expectedErrorMessage = "Must be a well-formed email address";
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
@@ -117,7 +118,7 @@ class AuthenticationIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_WRONG_FORMAT_ERROR));
     }
 
     @Test
@@ -126,7 +127,6 @@ class AuthenticationIntegrationTests {
         malformedRequest.setUsername("marek_test@gmail.com");
         malformedRequest.setPassword("pas");
 
-        String expectedErrorMessage = "Size must be between 4 and 20";
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
                         .content(mapToJson(malformedRequest))
@@ -134,16 +134,67 @@ class AuthenticationIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(PASSWORD_SIZE_ERROR));
     }
 
-    private static String mapToJson(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    @Test
+    public void shouldLoginWhenCredentialsAreCorrect() throws Exception {
+        UserDTO user = userService.createUser(authRequest);
+
+        MvcResult result = userLoginAction(authRequest);
+
+        int tokenIndexStart = 7;
+        String token = result.getResponse().getHeader("Authorization").substring(tokenIndexStart);
+        String extractedUserId = jwtUtils.extractId(token);
+        String extractedUsername = jwtUtils.extractUsername(token);
+
+        assertEquals(user.getUserName(), extractedUsername);
+        assertEquals(user.getId(), extractedUserId);
+    }
+
+    @Test
+    public void shouldNotAcceptLoginRequestWhenCredentialsAreIncorrect() throws Exception {
+        userService.createUser(authRequest);
+        AuthRequest malformedLoginRequest = new AuthRequest("marek1@gmail.com", "sapp");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/sign_in")
+                        .content(mapToJson(malformedLoginRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(INCORRECT_CREDENTIALS_ERROR));
+    }
+
+    @Test
+    public void shouldNotAcceptLoginRequestWhenEmailIsNotWellFormed() throws Exception {
+        userService.createUser(authRequest);
+        AuthRequest malformedLoginRequest = new AuthRequest("marekgmail.com", "pass");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/sign_in")
+                        .content(mapToJson(malformedLoginRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_WRONG_FORMAT_ERROR))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    public void shouldNotAcceptLoginRequestWhenPasswordSizeDoesNotMatch() throws Exception {
+        userService.createUser(authRequest);
+        AuthRequest malformedLoginRequest = new AuthRequest("marek@gmail.com", "pss");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/sign_in")
+                        .content(mapToJson(malformedLoginRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(PASSWORD_SIZE_ERROR))
+                .andDo(MockMvcResultHandlers.print());
     }
 }
-
 
