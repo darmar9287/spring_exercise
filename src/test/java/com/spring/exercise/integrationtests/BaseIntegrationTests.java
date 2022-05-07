@@ -16,7 +16,7 @@ public class BaseIntegrationTests {
     @Autowired
     private MockMvc mockMvc;
 
-    protected MvcResult userLoginAction(AuthRequest authRequest) throws Exception{
+    protected MvcResult userLoginAction(AuthRequest authRequest) throws Exception {
        return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
                         .content(mapToJson(authRequest))

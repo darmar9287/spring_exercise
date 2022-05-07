@@ -51,6 +51,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
     private final static String EMAIL_EXISTS_ERROR = "Email in use";
     private final static String EMAIL_WRONG_FORMAT_ERROR = "Must be a well-formed email address";
     private final static String PASSWORD_SIZE_ERROR = "Size must be between 4 and 20";
+    private final static String INCORRECT_CREDENTIALS_ERROR = "Invalid login credentials";
     private AuthRequest authRequest;
 
     @BeforeEach
@@ -109,7 +110,6 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
         AuthRequest malformedRequest = new AuthRequest();
         malformedRequest.setUsername("marek_testgmail.com");
         malformedRequest.setPassword("pass");
-        String expectedErrorMessage = "Must be a well-formed email address";
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
@@ -118,7 +118,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_WRONG_FORMAT_ERROR));
     }
 
     @Test
@@ -164,7 +164,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andReturn();
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(INCORRECT_CREDENTIALS_ERROR));
     }
 
     @Test
@@ -178,8 +178,8 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn();
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_WRONG_FORMAT_ERROR))
+                .andDo(MockMvcResultHandlers.print());
     }
 
     @Test
@@ -193,9 +193,8 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn();
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(PASSWORD_SIZE_ERROR))
+                .andDo(MockMvcResultHandlers.print());
     }
 }
-
 
