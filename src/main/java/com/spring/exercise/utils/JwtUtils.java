@@ -1,14 +1,15 @@
 package com.spring.exercise.utils;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Component
@@ -17,14 +18,16 @@ public class JwtUtils {
     private String secretKey;
     public String sub;
     public String jti;
+    private static final int BEARER_SUBSTRING_LENGTH = 7;
+
 
     public JwtUtils(@Value("${jwt.secret}") String secretKey) {
         this.secretKey = secretKey;
     }
 
-    public boolean validateToken(String token, String username) {
-        String userMail = extractUsername(username);
-        return userMail.equals(username) && !isTokenExpired(token);
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     public String generateToken(Authentication authentication, String userId) {
@@ -54,6 +57,10 @@ public class JwtUtils {
 
     public String extractId(String token) {
         return extractClaim(token, Claims::getId);
+    }
+
+    public String extractIat(String token) {
+        return String.valueOf(extractClaim(token, Claims::getIssuedAt));
     }
 
     public Date extractExpiration(String token) {

@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -52,7 +53,9 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
     private final static String EMAIL_WRONG_FORMAT_ERROR = "Must be a well-formed email address";
     private final static String PASSWORD_SIZE_ERROR = "Size must be between 4 and 20";
     private final static String INCORRECT_CREDENTIALS_ERROR = "Invalid login credentials";
-    private AuthRequest authRequest;
+    private final static String NOT_AUTHORIZED_ERROR = "Not authorized";
+    private final static int BEARER_SUBSTRING_LENGTH = 7;
+
 
     @BeforeEach
     public void setUp() {
@@ -66,18 +69,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
 
     @Test
     public void shouldResponseWith200WhenUserCreated() throws Exception {
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-                        .post("/users/sign_up")
-                        .content(mapToJson(authRequest))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
-                .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))))
-                .andReturn();
-
+        MvcResult result = createDefaultUser();
         Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
         assertTrue(user.isPresent());
         assertEquals(authRequest.getUsername(), user.get().getUserName());
@@ -196,5 +188,42 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
                 .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(PASSWORD_SIZE_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
-}
 
+    @Test
+    public void shouldReturnCurrentUserIfTokenIsCorrect() throws Exception{
+        MvcResult resultUser = createDefaultUser();
+
+        String token = resultUser.getResponse().getHeader("Authorization").toString();
+        Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
+        assertTrue(user.isPresent());
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/currentuser")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+        String parsedJwt = null;
+        if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
+            parsedJwt = token.substring(BEARER_SUBSTRING_LENGTH);
+        }
+        String extractedUserId = jwtUtils.extractId(parsedJwt);
+        String extractedUsername = jwtUtils.extractUsername(parsedJwt);
+        assertEquals(user.get().getUserName(), extractedUsername);
+        assertEquals(user.get().getId(), extractedUserId);
+    }
+
+    @Test
+    public void shouldResponseWith401WhenUserIsNotAuthorized() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/currentuser")
+                        .header("Authorization", "")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(NOT_AUTHORIZED_ERROR));
+
+    }
+}

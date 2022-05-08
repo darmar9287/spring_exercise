@@ -8,12 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,7 +27,7 @@ public class AuthenticationController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authorization", "Bearer " + result.getJwt());
 
-        final var response = userServiceImpl.generateResponse(result);
+        final var response = userServiceImpl.generateRegisterResponse(result);
         return ResponseEntity.ok()
                 .headers(responseHeaders)
                 .body(response);
@@ -43,5 +41,11 @@ public class AuthenticationController {
         responseHeaders.set("Authorization", "Bearer " + jwt);
 
         return ResponseEntity.ok().headers(responseHeaders).build();
+    }
+
+    @GetMapping("/currentuser")
+    private ResponseEntity<?> getCurrentUser(@RequestHeader(name="Authorization") String token) {
+        final var response = userServiceImpl.getCurrentUserResponse(token);
+        return ResponseEntity.ok().body(Map.of("currentUser:", response));
     }
 }

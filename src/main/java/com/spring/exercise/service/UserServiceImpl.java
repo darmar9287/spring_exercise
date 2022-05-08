@@ -2,6 +2,7 @@ package com.spring.exercise.service;
 
 import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.controller.model.AuthResponse;
+import com.spring.exercise.controller.model.CurrentUserResponse;
 import com.spring.exercise.controller.model.UserDTO;
 import com.spring.exercise.exceptions.InvalidCredentialsException;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
@@ -19,17 +20,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserDetailsService {
-
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
+    private static final int BEARER_SUBSTRING_LENGTH = 7;
 
     public UserDTO createUser(AuthRequest authRequest) {
         if (userRepository.findByUserName(authRequest.getUsername()).isPresent()) {
@@ -61,7 +66,7 @@ public class UserServiceImpl implements UserDetailsService {
         return jwtUtils.generateToken(authentication, user.get().getId());
     }
 
-    public AuthResponse generateResponse(UserDTO user) {
+    public AuthResponse generateRegisterResponse(UserDTO user) {
         return AuthResponse.mapFromDTO(user);
     }
 
@@ -73,5 +78,16 @@ public class UserServiceImpl implements UserDetailsService {
 
     private Optional<UserEntity> getUserFromDB(String username) {
         return userRepository.findByUserName(username);
+    }
+
+    public CurrentUserResponse getCurrentUserResponse(String token) {
+        String parsedJwt = null;
+        if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
+            parsedJwt = token.substring(BEARER_SUBSTRING_LENGTH);
+        }
+        String iat = jwtUtils.extractIat(parsedJwt);
+        String email = jwtUtils.extractUsername(parsedJwt);
+        String id = jwtUtils.extractId(parsedJwt);
+        return new CurrentUserResponse(iat, email, id);
     }
 }
