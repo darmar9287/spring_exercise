@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketRequest {
-
     private String id;
     @NotBlank
     private String title;
