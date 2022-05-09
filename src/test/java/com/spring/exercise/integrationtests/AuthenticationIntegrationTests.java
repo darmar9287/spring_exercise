@@ -21,11 +21,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class AuthenticationIntegrationTests extends BaseIntegrationTests{
+class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -52,7 +52,9 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
     private final static String EMAIL_WRONG_FORMAT_ERROR = "Must be a well-formed email address";
     private final static String PASSWORD_SIZE_ERROR = "Size must be between 4 and 20";
     private final static String INCORRECT_CREDENTIALS_ERROR = "Invalid login credentials";
-    private AuthRequest authRequest;
+    private final static String NOT_AUTHORIZED_ERROR = "Not authorized";
+    private final static int BEARER_SUBSTRING_LENGTH = 7;
+
 
     @BeforeEach
     public void setUp() {
@@ -66,18 +68,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
 
     @Test
     public void shouldResponseWith200WhenUserCreated() throws Exception {
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-                        .post("/users/sign_up")
-                        .content(mapToJson(authRequest))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
-                .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))))
-                .andReturn();
-
+        MvcResult result = createDefaultUser();
         Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
         assertTrue(user.isPresent());
         assertEquals(authRequest.getUsername(), user.get().getUserName());
@@ -87,7 +78,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
         String extractedUserId = jwtUtils.extractId(token);
         String extractedUsername = jwtUtils.extractUsername(token);
 
-        assertEquals(user.get().getUserName(),extractedUsername);
+        assertEquals(user.get().getUserName(), extractedUsername);
         assertEquals(user.get().getId(), extractedUserId);
     }
 
@@ -196,5 +187,41 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests{
                 .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(PASSWORD_SIZE_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
-}
 
+    @Test
+    public void shouldReturnCurrentUserIfTokenIsCorrect() throws Exception {
+        MvcResult resultUser = createDefaultUser();
+
+        String token = resultUser.getResponse().getHeader("Authorization").toString();
+        Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
+        assertTrue(user.isPresent());
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/currentuser")
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$..iat").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$..email").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$..id").exists())
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn().getResponse().getContentAsString();
+        String parsedJwt = jwtUtils.parseJwt(token).get();
+        String extractedUserId = jwtUtils.extractId(parsedJwt);
+        String extractedUsername = jwtUtils.extractUsername(parsedJwt);
+        assertEquals(user.get().getUserName(), extractedUsername);
+        assertEquals(user.get().getId(), extractedUserId);
+    }
+
+    @Test
+    public void shouldResponseWith401WhenUserIsNotAuthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/currentuser")
+                        .header("Authorization", "")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(NOT_AUTHORIZED_ERROR));
+    }
+}

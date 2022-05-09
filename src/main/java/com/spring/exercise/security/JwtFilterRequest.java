@@ -2,12 +2,19 @@ package com.spring.exercise.security;
 
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -19,12 +26,11 @@ import java.util.Collections;
 import java.util.Optional;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JwtFilterRequest extends OncePerRequestFilter {
 
     private static final int BEARER_SUBSTRING_LENGTH = 7;
-
     private final JwtUtils jwtUtils;
-
     private final UserServiceImpl userServiceImpl;
 
     @Override
@@ -32,27 +38,32 @@ public class JwtFilterRequest extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         Optional<String> jwtToken = parseJwt(request);
-
+        String username = null;
         if (jwtToken.isPresent()) {
-            String userName = jwtUtils.extractUsername(jwtToken.get());
-            UserDetails userDetails = userServiceImpl.loadUserByUsername(userName);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-                    Collections.emptyList());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            try {
+                username = jwtUtils.extractUsername(jwtToken.get());
+            } catch (Exception e){
+                log.error("Failed to extract username from JWT, reason: " + e.getMessage());
+            }
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userServiceImpl.loadUserByUsername(username);
+                if (jwtUtils.validateToken(jwtToken.get(), userDetails)) {
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    usernamePasswordAuthenticationToken
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                }
+            }
         }
-
         filterChain.doFilter(request, response);
     }
 
     private Optional<String> parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
-
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
             return Optional.of(headerAuth.substring(BEARER_SUBSTRING_LENGTH));
         }
-
         return Optional.ofNullable(headerAuth);
     }
-
 }
