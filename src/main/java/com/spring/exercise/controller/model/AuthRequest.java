@@ -13,7 +13,6 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthRequest {
-
     @Email(message = AppMessages.EMAIL_FORMAT_ERROR)
     private String username;
     @NotBlank

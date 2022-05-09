@@ -16,17 +16,14 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity {
-
     @Id
     private String id;
-
     @Indexed(unique = true)
-    @Email(message = AppMessages.EMAIL_FORMAT_ERROR)
+    @Email
     private String userName;
     @NonNull
-    @Size(min = 4, max = 20, message = AppMessages.PASSWORD_SIZE_ERROR)
+    @Size(min = 4, max = 20)
     private String password;
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

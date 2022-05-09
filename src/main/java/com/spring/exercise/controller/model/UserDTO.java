@@ -15,5 +15,4 @@ public class UserDTO {
     public static UserDTO mapFromEntity(UserEntity userEntity, String jwt) {
         return new UserDTO(userEntity.getId(), userEntity.getUserName(), jwt);
     }
-
 }
