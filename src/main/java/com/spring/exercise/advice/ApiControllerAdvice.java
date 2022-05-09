@@ -13,7 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @RestControllerAdvice
 public class ApiControllerAdvice extends ResponseEntityExceptionHandler {
-    @ExceptionHandler({CustomExceptions.class})
+    @ExceptionHandler( {CustomExceptions.class} )
     public ResponseEntity<?> handleCustomException(CustomExceptions exception) {
         return CustomExceptions.handleCustomException(exception);
     }
