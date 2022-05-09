@@ -30,17 +30,23 @@ public class TicketServiceImpl {
     private final TicketRepository ticketRepository;
     private final JwtUtils jwtUtils;
 
-    public TicketDTO createTicket(TicketRequest ticketRequest) {
+    public TicketDTO createTicket(TicketRequest ticketRequest, String token) {
+        String userId = fetchUserIdFromToken(token);
         final var ticketEntity = new TicketEntity();
         ticketEntity.setTitle(ticketRequest.getTitle());
         ticketEntity.setPrice(ticketRequest.getPrice());
+        ticketEntity.setUserId(userId);
         ticketRepository.save(ticketEntity);
                return TicketDTO.mapFromEntity(ticketEntity);
     }
 
     public TicketCreateResponse generateTicketCreateResponse(TicketDTO ticket, String token) {
+        String userId = fetchUserIdFromToken(token);
+        return TicketCreateResponse.mapFromDTO(ticket, userId);
+    }
+
+    private String fetchUserIdFromToken(String token) {
         String parsedJwt = jwtUtils.parseJwt(token).get();
-        String id = jwtUtils.extractId(parsedJwt);
-        return TicketCreateResponse.mapFromDTO(ticket, id);
+        return jwtUtils.extractId(parsedJwt);
     }
 }

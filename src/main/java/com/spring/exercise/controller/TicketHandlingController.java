@@ -26,7 +26,7 @@ public class TicketHandlingController {
     @PostMapping(value = "/create", produces = "application/json;charset=UTF-8")
     private ResponseEntity<?> createTicket(@Valid @RequestBody TicketRequest ticketRequest, @RequestHeader(name = "Authorization") String token, Errors errors) {
         RequestBodyValidator.check(errors);
-        TicketDTO result = ticketService.createTicket(ticketRequest);
+        TicketDTO result = ticketService.createTicket(ticketRequest, token);
 
         final var response = ticketService.generateTicketCreateResponse(result, token);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

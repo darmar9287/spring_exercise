@@ -18,4 +18,5 @@ public class TicketRequest {
     private String title;
     @DecimalMin(value = "0.01", inclusive = true)
     private BigDecimal price;
+    private String userId;
 }
