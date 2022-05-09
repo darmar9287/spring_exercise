@@ -77,11 +77,11 @@ public class UserServiceImpl implements UserDetailsService {
     }
 
     public CurrentUserResponse getCurrentUserResponse(String token) {
-        Optional<String> parsedJwt = jwtUtils.parseJwt(token);
+        String parsedJwt = jwtUtils.parseJwt(token).get();
 
-        String iat = jwtUtils.extractIat(parsedJwt.get());
-        String email = jwtUtils.extractUsername(parsedJwt.get());
-        String id = jwtUtils.extractId(parsedJwt.get());
+        String iat = jwtUtils.extractIat(parsedJwt);
+        String email = jwtUtils.extractUsername(parsedJwt);
+        String id = jwtUtils.extractId(parsedJwt);
         return new CurrentUserResponse(iat, email, id);
     }
 

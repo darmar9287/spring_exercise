@@ -206,9 +206,9 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$..id").exists())
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn().getResponse().getContentAsString();
-        Optional<String> parsedJwt = jwtUtils.parseJwt(token);
-        String extractedUserId = jwtUtils.extractId(parsedJwt.get());
-        String extractedUsername = jwtUtils.extractUsername(parsedJwt.get());
+        String parsedJwt = jwtUtils.parseJwt(token).get();
+        String extractedUserId = jwtUtils.extractId(parsedJwt);
+        String extractedUsername = jwtUtils.extractUsername(parsedJwt);
         assertEquals(user.get().getUserName(), extractedUsername);
         assertEquals(user.get().getId(), extractedUserId);
     }
