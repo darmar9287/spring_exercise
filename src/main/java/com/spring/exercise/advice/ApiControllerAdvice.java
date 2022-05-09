@@ -12,8 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
-    public class ApiControllerAdvice extends ResponseEntityExceptionHandler {
-
+public class ApiControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler({CustomExceptions.class})
     public ResponseEntity<?> handleCustomException(CustomExceptions exception) {
         return CustomExceptions.handleCustomException(exception);

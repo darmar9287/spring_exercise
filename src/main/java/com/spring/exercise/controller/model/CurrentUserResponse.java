@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CurrentUserResponse {
-    String iat;
+    private String iat;
     private String email;
     private String id;
 }

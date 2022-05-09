@@ -76,18 +76,17 @@ public class UserServiceImpl implements UserDetailsService {
         return UserDetailsImpl.build(user);
     }
 
+    public CurrentUserResponse getCurrentUserResponse(String token) {
+        Optional<String> parsedJwt = jwtUtils.parseJwt(token);
+
+        String iat = jwtUtils.extractIat(parsedJwt.get());
+        String email = jwtUtils.extractUsername(parsedJwt.get());
+        String id = jwtUtils.extractId(parsedJwt.get());
+        return new CurrentUserResponse(iat, email, id);
+    }
+
     private Optional<UserEntity> getUserFromDB(String username) {
         return userRepository.findByUserName(username);
     }
 
-    public CurrentUserResponse getCurrentUserResponse(String token) {
-        String parsedJwt = null;
-        if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
-            parsedJwt = token.substring(BEARER_SUBSTRING_LENGTH);
-        }
-        String iat = jwtUtils.extractIat(parsedJwt);
-        String email = jwtUtils.extractUsername(parsedJwt);
-        String id = jwtUtils.extractId(parsedJwt);
-        return new CurrentUserResponse(iat, email, id);
-    }
 }

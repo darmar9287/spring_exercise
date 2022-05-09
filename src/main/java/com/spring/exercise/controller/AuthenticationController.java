@@ -44,7 +44,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/currentuser")
-    private ResponseEntity<?> getCurrentUser(@RequestHeader(name="Authorization") String token) {
+    private ResponseEntity<?> getCurrentUser(@RequestHeader(name = "Authorization") String token) {
         final var response = userServiceImpl.getCurrentUserResponse(token);
         return ResponseEntity.ok().body(Map.of("currentUser:", response));
     }

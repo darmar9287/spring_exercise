@@ -4,6 +4,7 @@ import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JwtFilterRequest extends OncePerRequestFilter {
 
     private static final int BEARER_SUBSTRING_LENGTH = 7;
@@ -40,7 +42,9 @@ public class JwtFilterRequest extends OncePerRequestFilter {
         if (jwtToken.isPresent()) {
             try {
                 username = jwtUtils.extractUsername(jwtToken.get());
-            } catch (Exception e){}
+            } catch (Exception e){
+                log.error("Failed to extract username from JWT, reason: " + e.getMessage());
+            }
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userServiceImpl.loadUserByUsername(username);
                 if (jwtUtils.validateToken(jwtToken.get(), userDetails)) {

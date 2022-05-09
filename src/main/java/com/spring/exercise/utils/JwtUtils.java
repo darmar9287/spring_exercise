@@ -42,6 +42,14 @@ public class JwtUtils {
                 .compact();
     }
 
+    public Optional<String> parseJwt(String token) {
+        Optional<String> parsedJwt = Optional.empty();
+        if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
+            parsedJwt = Optional.of(token.substring(BEARER_SUBSTRING_LENGTH));
+        }
+        return parsedJwt;
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
