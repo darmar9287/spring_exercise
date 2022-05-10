@@ -16,4 +16,11 @@ public class TicketCreateResponse {
         private String title;
         private BigDecimal price;
         private String userId;
+
+    public static TicketCreateResponse mapFromDTO(TicketDTO ticket) {
+        return new TicketCreateResponseBuilder().id(ticket.getId())
+                .title(ticket.getTitle())
+                .price(ticket.getPrice())
+                .userId(ticket.getUserId()).build();
+    }
 }

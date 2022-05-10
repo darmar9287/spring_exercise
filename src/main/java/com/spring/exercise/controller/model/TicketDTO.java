@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
-import java.text.Bidi;
 
 @Data
 @RequiredArgsConstructor
@@ -17,4 +16,11 @@ public class TicketDTO {
     private final String title;
     private final BigDecimal price;
     private final String userId;
+
+    public static TicketDTO mapFromEntity(TicketEntity ticketEntity) {
+        return new TicketDTOBuilder().id(ticketEntity.getId())
+                .title(ticketEntity.getTitle())
+                .price(ticketEntity.getPrice())
+                .userId(ticketEntity.getUserId()).build();
+    }
 }

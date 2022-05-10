@@ -37,17 +37,11 @@ public class TicketServiceImpl {
         ticketEntity.setPrice(ticketRequest.getPrice());
         ticketEntity.setUserId(userId);
         ticketRepository.save(ticketEntity);
-               return TicketDTO.builder().id(ticketEntity.getId())
-                               .title(ticketEntity.getTitle())
-                                       .price(ticketEntity.getPrice())
-                                               .userId(ticketEntity.getUserId()).build();
+               return TicketDTO.mapFromEntity(ticketEntity);
     }
 
     public TicketCreateResponse generateTicketCreateResponse(TicketDTO ticket, String token) {
         String userId = jwtUtils.fetchUserIdFromToken(token);
-        return TicketCreateResponse.builder().id(ticket.getId())
-                .title(ticket.getTitle())
-                .price(ticket.getPrice())
-                .userId(userId).build();
+        return TicketCreateResponse.mapFromDTO(ticket);
     }
 }
