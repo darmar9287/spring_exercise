@@ -20,7 +20,9 @@ public class TicketHandlingController {
     private final TicketServiceImpl ticketService;
 
     @PostMapping(value = "/create", produces = "application/json;charset=UTF-8")
-    private ResponseEntity<?> createTicket(@Valid @RequestBody TicketRequest ticketRequest, Errors errors, @RequestHeader(name = "Authorization") String token) {
+    public ResponseEntity<?> createTicket(@Valid @RequestBody TicketRequest ticketRequest,
+                                          Errors errors, @RequestHeader(name = "Authorization")
+                                          String token) {
         RequestBodyValidator.check(errors);
         TicketDTO result = ticketService.createTicket(ticketRequest, token);
 

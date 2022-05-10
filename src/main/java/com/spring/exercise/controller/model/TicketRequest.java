@@ -12,10 +12,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketRequest {
-    private String id;
     @NotBlank
     private String title;
-    @DecimalMin(value = "0.01", inclusive = true)
+    @DecimalMin(value = "0.5", inclusive = true)
     private BigDecimal price;
-    private String userId;
 }

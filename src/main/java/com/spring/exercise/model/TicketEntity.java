@@ -21,7 +21,7 @@ public class TicketEntity {
     private String id;
     @NotBlank(message = AppMessages.TICKET_TITLE_BLANK_ERROR)
     private String title;
-    @DecimalMin(value = "0.01", inclusive = false, message = AppMessages.TICKET_PRICE_TOO_LOW)
+    @DecimalMin(value = "0.5", inclusive = false, message = AppMessages.TICKET_PRICE_TOO_LOW)
     private BigDecimal price;
     private String userId;
 }

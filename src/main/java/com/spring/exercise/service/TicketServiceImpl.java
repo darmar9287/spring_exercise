@@ -31,22 +31,23 @@ public class TicketServiceImpl {
     private final JwtUtils jwtUtils;
 
     public TicketDTO createTicket(TicketRequest ticketRequest, String token) {
-        String userId = fetchUserIdFromToken(token);
+        String userId = jwtUtils.fetchUserIdFromToken(token);
         final var ticketEntity = new TicketEntity();
         ticketEntity.setTitle(ticketRequest.getTitle());
         ticketEntity.setPrice(ticketRequest.getPrice());
         ticketEntity.setUserId(userId);
         ticketRepository.save(ticketEntity);
-               return TicketDTO.mapFromEntity(ticketEntity);
+               return TicketDTO.builder().id(ticketEntity.getId())
+                               .title(ticketEntity.getTitle())
+                                       .price(ticketEntity.getPrice())
+                                               .userId(ticketEntity.getUserId()).build();
     }
 
     public TicketCreateResponse generateTicketCreateResponse(TicketDTO ticket, String token) {
-        String userId = fetchUserIdFromToken(token);
-        return TicketCreateResponse.mapFromDTO(ticket, userId);
-    }
-
-    private String fetchUserIdFromToken(String token) {
-        String parsedJwt = jwtUtils.parseJwt(token).get();
-        return jwtUtils.extractId(parsedJwt);
+        String userId = jwtUtils.fetchUserIdFromToken(token);
+        return TicketCreateResponse.builder().id(ticket.getId())
+                .title(ticket.getTitle())
+                .price(ticket.getPrice())
+                .userId(userId).build();
     }
 }
