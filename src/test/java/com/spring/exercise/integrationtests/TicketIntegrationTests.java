@@ -4,6 +4,7 @@ import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.controller.model.TicketRequest;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
+import com.spring.exercise.repository.UserRepository;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,8 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     private MockMvc mockMvc;
     @Autowired
     private TicketRepository ticketRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private TicketRequest ticketRequest;
     private static final String TICKET_TITLE = "ticket_title";
@@ -49,6 +52,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @AfterEach
     public void tearDown() {
         ticketRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
