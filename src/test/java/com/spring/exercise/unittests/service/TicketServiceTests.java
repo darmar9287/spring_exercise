@@ -11,6 +11,7 @@ import com.spring.exercise.service.TicketServiceImpl;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
 import org.bson.types.ObjectId;
+import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,20 +41,22 @@ public class TicketServiceTests {
     private TicketRequest ticketRequest;
     private TicketEntity ticketEntity;
 
+    private final static String FAKE_TICKET_ID = "fake_ticket_id";
     private final static String FAKE_TOKEN = "fake_token";
     private final static String FAKE_USER_ID = "fake_user_id";
     private final static String FAKE_TICKET_TITLE = "fake_title";
     private final static BigDecimal FAKE_TICKET_PRICE = new BigDecimal(12);
 
-
+    public TicketServiceTests() {}
 
     @BeforeEach
     public void setUp() {
         ticketRequest = new TicketRequest();
-        ticketRequest.setTitle("ticket_title");
-        ticketRequest.setPrice(new BigDecimal(13));
+        ticketRequest.setTitle(FAKE_TICKET_TITLE);
+        ticketRequest.setPrice(FAKE_TICKET_PRICE);
 
         ticketEntity = new TicketEntity();
+        ticketEntity.setId(ObjectId.get().toString());
         ticketEntity.setUserId(FAKE_USER_ID);
         ticketEntity.setTitle(FAKE_TICKET_TITLE);
         ticketEntity.setPrice(FAKE_TICKET_PRICE);
@@ -62,11 +66,11 @@ public class TicketServiceTests {
     void testCreateTicketShouldSuccessWhenRequestIsCorrect() {
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
-        when(ticketRepository.save(ticketEntity)).thenReturn(ticketEntity);
+        when(ticketRepository.save(any())).thenReturn(ticketEntity);
         //then
         TicketDTO createdTicket = ticketService.createTicket(ticketRequest, FAKE_TOKEN);
         assertEquals(createdTicket.getTitle(), ticketEntity.getTitle());
+        assertEquals(createdTicket.getPrice(), ticketEntity.getPrice());
+        assertEquals(createdTicket.getUserId(), ticketEntity.getUserId());
     }
-
-
 }

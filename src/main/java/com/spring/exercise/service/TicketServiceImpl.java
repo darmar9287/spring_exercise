@@ -39,9 +39,4 @@ public class TicketServiceImpl {
         ticketRepository.save(ticketEntity);
                return TicketDTO.mapFromEntity(ticketEntity);
     }
-
-    public TicketCreateResponse generateTicketCreateResponse(TicketDTO ticket, String token) {
-        String userId = jwtUtils.fetchUserIdFromToken(token);
-        return TicketCreateResponse.mapFromDTO(ticket);
-    }
 }

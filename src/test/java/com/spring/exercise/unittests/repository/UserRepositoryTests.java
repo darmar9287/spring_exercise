@@ -61,6 +61,4 @@ public class UserRepositoryTests {
         Optional<UserEntity> fetchedUser = userRepository.findByUserName(user.getUserName());
         assertTrue(fetchedUser.isEmpty());
     }
-
-
 }

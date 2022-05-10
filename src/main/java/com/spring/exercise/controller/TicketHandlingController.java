@@ -1,5 +1,6 @@
 package com.spring.exercise.controller;
 
+import com.spring.exercise.controller.model.TicketCreateResponse;
 import com.spring.exercise.controller.model.TicketDTO;
 import com.spring.exercise.controller.model.TicketRequest;
 import com.spring.exercise.service.TicketServiceImpl;
@@ -25,8 +26,8 @@ public class TicketHandlingController {
                                           @RequestHeader(name = "Authorization") String token) {
         RequestBodyValidator.check(errors);
         TicketDTO result = ticketService.createTicket(ticketRequest, token);
+        final var response = TicketCreateResponse.mapFromDTO(result);
 
-        final var response = ticketService.generateTicketCreateResponse(result, token);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

@@ -46,15 +46,10 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Autowired
     private JwtUtils jwtUtils;
 
-    private final static String USER_NAME = "marek_test@gmail.com";
-    private final static String USER_PASSWORD = "pass";
     private final static String EMAIL_EXISTS_ERROR = "Email in use";
     private final static String EMAIL_WRONG_FORMAT_ERROR = "Must be a well-formed email address";
     private final static String PASSWORD_SIZE_ERROR = "Size must be between 4 and 20";
     private final static String INCORRECT_CREDENTIALS_ERROR = "Invalid login credentials";
-    private final static String NOT_AUTHORIZED_ERROR = "Not authorized";
-    private final static int BEARER_SUBSTRING_LENGTH = 7;
-
 
     @BeforeEach
     public void setUp() {

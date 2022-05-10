@@ -20,6 +20,9 @@ public class BaseIntegrationTests {
     private MockMvc mockMvc;
 
     protected AuthRequest authRequest;
+    protected final static String USER_NAME = "marek_test@gmail.com";
+    protected final static String USER_PASSWORD = "pass";
+    protected final static String NOT_AUTHORIZED_ERROR = "Not authorized";
 
     protected MvcResult userLoginAction(AuthRequest authRequest) throws Exception {
        return mockMvc.perform(MockMvcRequestBuilders
