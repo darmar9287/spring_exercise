@@ -5,6 +5,7 @@ import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +36,11 @@ public class TicketRepositoryTests {
         ticket.setTitle(TICKET_TITLE);
         ticket.setPrice(TICKET_PRICE);
         ticket.setUserId(USER_ID);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ticketRepository.deleteAll();
     }
 
     @Test

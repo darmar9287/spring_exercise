@@ -50,7 +50,6 @@ public class UserServiceImpl implements UserDetailsService {
         return UserDTO.mapFromEntity(userEntity, jwt);
     }
 
-
     public String createLoginJwt(AuthRequest authRequest) {
         Authentication authentication;
         try {
@@ -87,5 +86,4 @@ public class UserServiceImpl implements UserDetailsService {
     private Optional<UserEntity> getUserFromDB(String username) {
         return userRepository.findByUserName(username);
     }
-
 }

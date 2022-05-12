@@ -2,6 +2,8 @@ package com.spring.exercise.service;
 
 import com.spring.exercise.controller.model.*;
 import com.spring.exercise.exceptions.InvalidCredentialsException;
+import com.spring.exercise.exceptions.TicketDoesNotBelongToUserException;
+import com.spring.exercise.exceptions.TicketIdNotFoundException;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.model.UserEntity;
@@ -37,6 +39,29 @@ public class TicketServiceImpl {
         ticketEntity.setPrice(ticketRequest.getPrice());
         ticketEntity.setUserId(userId);
         ticketRepository.save(ticketEntity);
-               return TicketDTO.mapFromEntity(ticketEntity);
+
+        return TicketDTO.mapFromEntity(ticketEntity);
+    }
+
+    public TicketDTO updateTicket(TicketRequest ticketRequest, String ticketId, String token) {
+        final var ticketEntity = ticketRepository.findById(ticketId);
+        verifyIfTicketBelongsToUser(ticketId, token);
+        final var fetchedTicket = ticketEntity.get();
+        fetchedTicket.setTitle(ticketRequest.getTitle());
+        fetchedTicket.setPrice(ticketRequest.getPrice());
+        ticketRepository.save(fetchedTicket);
+
+        return TicketDTO.mapFromEntity(fetchedTicket);
+    }
+
+    private void verifyIfTicketBelongsToUser(String ticketId, String token) {
+        Optional<TicketEntity> ticket = ticketRepository.findById(ticketId);
+        if(ticket.isEmpty()) {
+            throw new TicketIdNotFoundException(ticketId);
+        }
+        String userIdFromToken = jwtUtils.fetchUserIdFromToken(token);
+        if(ticket.isPresent() && !ticket.get().getUserId().equals(userIdFromToken)) {
+            throw new TicketDoesNotBelongToUserException();
+        }
     }
 }

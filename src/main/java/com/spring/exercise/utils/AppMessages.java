@@ -14,5 +14,7 @@ public class AppMessages {
 
     public static final String TICKET_TITLE_BLANK_ERROR = "Must not be blank";
 
-    public static final String TICKET_PRICE_TOO_LOW = "Must be greater than or equal to 0.01";
+    public static final String TICKET_PRICE_TOO_LOW_ERROR = "Must be greater than or equal to 0.01";
+
+    public static final String TICKET_NOT_FOUND_ERROR = "Not found ticket with id ";
 }

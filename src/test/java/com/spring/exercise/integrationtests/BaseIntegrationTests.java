@@ -35,14 +35,6 @@ public class BaseIntegrationTests {
                 .andReturn();
     }
 
-    protected static String mapToJson(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     protected MvcResult createDefaultUser() throws Exception{
         authRequest.setUsername("marek_test@gmail.com");
         authRequest.setPassword("pass");
@@ -57,5 +49,27 @@ public class BaseIntegrationTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
                 .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))))
                 .andReturn();
+    }
+
+    protected MvcResult createCustomUser(AuthRequest authRequest) throws Exception{
+        return mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/sign_up")
+                        .content(mapToJson(authRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
+                .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))))
+                .andReturn();
+    }
+
+    protected static String mapToJson(final Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
