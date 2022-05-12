@@ -3,6 +3,7 @@ package com.spring.exercise.unittests.repository;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +37,11 @@ public class UserRepositoryTests {
         user.setPassword(USER_PASS);
     }
 
+    @AfterEach
+    public void tearDown() {
+        userRepository.deleteAll();
+    }
+
 
     @Test
     public void shouldSaveUserIfUsernameDoesNotExists() {
@@ -61,6 +67,4 @@ public class UserRepositoryTests {
         Optional<UserEntity> fetchedUser = userRepository.findByUserName(user.getUserName());
         assertTrue(fetchedUser.isEmpty());
     }
-
-
 }

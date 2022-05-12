@@ -20,6 +20,9 @@ public class BaseIntegrationTests {
     private MockMvc mockMvc;
 
     protected AuthRequest authRequest;
+    protected final static String USER_NAME = "marek_test@gmail.com";
+    protected final static String USER_PASSWORD = "pass";
+    protected final static String NOT_AUTHORIZED_ERROR = "Not authorized";
 
     protected MvcResult userLoginAction(AuthRequest authRequest) throws Exception {
        return mockMvc.perform(MockMvcRequestBuilders
@@ -30,14 +33,6 @@ public class BaseIntegrationTests {
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
-    }
-
-    protected static String mapToJson(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     protected MvcResult createDefaultUser() throws Exception{
@@ -54,5 +49,27 @@ public class BaseIntegrationTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
                 .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))))
                 .andReturn();
+    }
+
+    protected MvcResult createCustomUser(AuthRequest authRequest) throws Exception{
+        return mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/sign_up")
+                        .content(mapToJson(authRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
+                .andExpect(header().stringValues("Authorization", hasItems(containsString("Bearer"))))
+                .andReturn();
+    }
+
+    protected static String mapToJson(final Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

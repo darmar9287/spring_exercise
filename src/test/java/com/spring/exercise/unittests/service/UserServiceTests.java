@@ -74,7 +74,7 @@ public class UserServiceTests {
     @Test
     void shouldSuccessWhenCreateUserWithCorrectCredentials() {
         //when
-        when(userRepository.save(user)).thenReturn(user);
+        when(userRepository.save(any())).thenReturn(user);
         when(passwordEncoder.encode(USER_PASS)).thenReturn(USER_PASS);
         //then
         UserDTO createdUser = userService.createUser(request);

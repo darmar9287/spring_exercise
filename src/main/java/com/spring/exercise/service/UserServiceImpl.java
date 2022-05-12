@@ -34,7 +34,6 @@ public class UserServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
-    private static final int BEARER_SUBSTRING_LENGTH = 7;
 
     public UserDTO createUser(AuthRequest authRequest) {
         if (userRepository.findByUserName(authRequest.getUsername()).isPresent()) {
@@ -50,7 +49,6 @@ public class UserServiceImpl implements UserDetailsService {
 
         return UserDTO.mapFromEntity(userEntity, jwt);
     }
-
 
     public String createLoginJwt(AuthRequest authRequest) {
         Authentication authentication;
@@ -88,5 +86,4 @@ public class UserServiceImpl implements UserDetailsService {
     private Optional<UserEntity> getUserFromDB(String username) {
         return userRepository.findByUserName(username);
     }
-
 }
