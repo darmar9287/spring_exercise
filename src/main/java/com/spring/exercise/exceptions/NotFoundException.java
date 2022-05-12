@@ -5,9 +5,9 @@ import com.spring.exercise.utils.ErrorResponse;
 
 import java.util.List;
 
-public class TicketIdNotFoundException extends CustomExceptions{
+public class NotFoundException extends CustomExceptions {
 
-    public TicketIdNotFoundException(String ticketId) {
+    public NotFoundException(String ticketId) {
         super(AppMessages.TICKET_NOT_FOUND_ERROR + ticketId, 404);
     }
 

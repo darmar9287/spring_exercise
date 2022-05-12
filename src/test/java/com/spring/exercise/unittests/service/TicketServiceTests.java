@@ -1,27 +1,21 @@
 package com.spring.exercise.unittests.service;
 
-import com.spring.exercise.controller.model.AuthRequest;
 import com.spring.exercise.controller.model.TicketDTO;
 import com.spring.exercise.controller.model.TicketRequest;
-import com.spring.exercise.controller.model.UserDTO;
-import com.spring.exercise.exceptions.TicketDoesNotBelongToUserException;
-import com.spring.exercise.exceptions.TicketIdNotFoundException;
+import com.spring.exercise.exceptions.NotAuthorizedException;
+import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.integrationtests.BaseIntegrationTests;
 import com.spring.exercise.model.TicketEntity;
-import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.service.TicketServiceImpl;
-import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
 import org.bson.types.ObjectId;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -29,7 +23,6 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -95,7 +88,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
         //when
         when(ticketRepository.findById(any())).thenReturn(Optional.empty());
         //then
-        assertThrows(TicketIdNotFoundException.class, () -> ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN));
+        assertThrows(NotFoundException.class, () -> ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN));
     }
 
     @Test
@@ -105,6 +98,6 @@ public class TicketServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(wrongUserId);
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticketEntity));
         //then
-        assertThrows(TicketDoesNotBelongToUserException.class, () -> ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN));
+        assertThrows(NotAuthorizedException.class, () -> ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN));
     }
 }

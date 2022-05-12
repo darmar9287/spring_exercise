@@ -138,11 +138,11 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String userId = jwtUtils.extractId(tokenValue);
         String ticketCreateResponse = createTicketForUser(userId, token).getResponse().getContentAsString();
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
-        String ticketTitle = JsonPath.parse(ticketCreateResponse).read("$.title");
-        var ticketPrice = JsonPath.parse(ticketCreateResponse).read("$.price");
+        String ticketTitle = "some_title";
+        var ticketPrice = new BigDecimal(45);
         mockMvc.perform(MockMvcRequestBuilders
-                        .put("/tickets/update?ticketId=" + ticketId)
-                        .content(mapToJson(ticketRequest))
+                        .put("/tickets/update/" + ticketId)
+                        .content(mapToJson(new TicketRequest(ticketTitle, ticketPrice)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -166,7 +166,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
         TicketRequest incorrectTicketRequest = new TicketRequest("title", new BigDecimal(0));
         mockMvc.perform(MockMvcRequestBuilders
-                        .put("/tickets/update?ticketId=" + ticketId)
+                        .put("/tickets/update/" + ticketId)
                         .content(mapToJson(incorrectTicketRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
@@ -188,7 +188,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
         TicketRequest incorrectTicketRequest = new TicketRequest("", new BigDecimal(12));
         mockMvc.perform(MockMvcRequestBuilders
-                        .put("/tickets/update?ticketId=" + ticketId)
+                        .put("/tickets/update/" + ticketId)
                         .content(mapToJson(incorrectTicketRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
@@ -214,7 +214,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
         TicketRequest incorrectTicketRequest = new TicketRequest("fake_title", new BigDecimal(12));
         mockMvc.perform(MockMvcRequestBuilders
-                        .put("/tickets/update?ticketId=" + ticketId)
+                        .put("/tickets/update/" + ticketId)
                         .content(mapToJson(incorrectTicketRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", fakeUserToken)

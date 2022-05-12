@@ -5,8 +5,8 @@ import com.spring.exercise.utils.ErrorResponse;
 
 import java.util.List;
 
-public class TicketDoesNotBelongToUserException extends CustomExceptions{
-    public TicketDoesNotBelongToUserException() {
+public class NotAuthorizedException extends CustomExceptions {
+    public NotAuthorizedException() {
         super(AppMessages.NOT_AUTHORIZED_ERROR, 401);
     }
 
