@@ -9,6 +9,7 @@ import com.spring.exercise.integrationtests.BaseIntegrationTests;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.service.TicketServiceImpl;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
@@ -125,5 +126,29 @@ public class TicketServiceTests extends BaseIntegrationTests {
         //then
         TicketListResponse ticketResponse = ticketService.generateTicketListResponse(0, 5);
         assertEquals(10, ticketResponse.getTickets().size());
+    }
+
+    @Test
+    public void findTicketByIdShouldReturnTicket() {
+        //given
+        String ticketId = ticketEntity.getId();
+        //when
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticketEntity));
+        //then
+        TicketDTO foundTicket = ticketService.findTicketById(ticketId);
+        assertEquals(foundTicket.getUserId(), ticketEntity.getUserId());
+        assertEquals(foundTicket.getId(), ticketEntity.getId());
+        assertEquals(foundTicket.getPrice(), ticketEntity.getPrice());
+        assertEquals(foundTicket.getTitle(), ticketEntity.getTitle());
+    }
+
+    @Test
+    public void findTicketByIdShouldThrowExceptionWhenTicketNotFound() {
+        //given
+        String fakeTicketId = "fake_ticket_id";
+        //when
+        when(ticketRepository.findById(fakeTicketId)).thenReturn(Optional.empty());
+        //then
+        assertThrows(NotFoundException.class, () -> ticketService.findTicketById(fakeTicketId));
     }
 }

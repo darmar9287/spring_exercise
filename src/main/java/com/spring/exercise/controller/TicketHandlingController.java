@@ -18,20 +18,13 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/tickets")
 public class TicketHandlingController {
 
-    private final JwtUtils jwtUtils;
     private final TicketServiceImpl ticketService;
-
 
     @PostMapping(value = "/create", produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> createTicket(@Valid @RequestBody TicketRequest ticketRequest,
@@ -62,5 +55,13 @@ public class TicketHandlingController {
             @RequestParam(defaultValue = "5") int size) {
             TicketListResponse ticketCreateResponse = ticketService.generateTicketListResponse(page, size);
             return ResponseEntity.status(HttpStatus.OK).body(ticketCreateResponse);
+    }
+
+    @GetMapping(value = "/show/{ticketId}", produces = "application/json;charset=UTF-8")
+    public ResponseEntity<?> showTicket(@PathVariable String ticketId) {
+        TicketDTO result = ticketService.findTicketById(ticketId);
+        final var response = TicketCreateResponse.mapFromDTO(result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

@@ -59,6 +59,14 @@ public class TicketServiceImpl {
         return new TicketListResponse(tickets, currentPage,pageTickets.getTotalElements(), pageTickets.getTotalPages()) ;
     }
 
+    public TicketDTO findTicketById(String id) {
+        Optional<TicketEntity> ticketEntity = ticketRepository.findById(id);
+        if(ticketEntity.isEmpty()) {
+            throw new NotFoundException(id);
+        }
+        return TicketDTO.mapFromEntity(ticketEntity.get());
+    }
+
     private void verifyIfTicketBelongsToUser(String ticketId, String token) {
         Optional<TicketEntity> ticket = ticketRepository.findById(ticketId);
         if(ticket.isEmpty()) {
