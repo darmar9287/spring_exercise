@@ -2,17 +2,27 @@ package com.spring.exercise.controller;
 
 import com.spring.exercise.controller.model.TicketCreateResponse;
 import com.spring.exercise.controller.model.TicketDTO;
+import com.spring.exercise.controller.model.TicketListResponse;
 import com.spring.exercise.controller.model.TicketRequest;
+import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.service.TicketServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.RequestBodyValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -43,6 +53,14 @@ public class TicketHandlingController {
         TicketDTO result = ticketService.updateTicket(ticketRequest, ticketId, token);
         final var response = TicketCreateResponse.mapFromDTO(result);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getAllTicketsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+            TicketListResponse ticketCreateResponse = ticketService.generateTicketListResponse(page, size);
+            return ResponseEntity.status(HttpStatus.OK).body(ticketCreateResponse);
     }
 }

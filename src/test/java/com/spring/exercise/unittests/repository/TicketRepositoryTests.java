@@ -14,7 +14,12 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
 
@@ -52,5 +57,20 @@ public class TicketRepositoryTests {
         assertEquals(savedTicket.getTitle(), fetchedTicket.getTitle());
         assertEquals(savedTicket.getPrice(), fetchedTicket.getPrice());
         assertEquals(savedTicket.getUserId(), fetchedTicket.getUserId());
+    }
+
+    @Test
+    public void shouldReturnTicketsList() {
+        //given
+        List<TicketEntity> ticketsList = new ArrayList<>();
+        for (int i = 0 ; i < 10 ; i++) {
+            ticketsList.add(new TicketEntity(ObjectId.get().toString(), "title" + i, new BigDecimal(10), "10" + i ));
+        }
+        //when
+        ticketRepository.saveAll(ticketsList);
+        //then
+        List<TicketEntity> ticketsFromDb = StreamSupport.stream(ticketRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
+        assertEquals(ticketsList.size(), ticketsFromDb.size());
     }
 }

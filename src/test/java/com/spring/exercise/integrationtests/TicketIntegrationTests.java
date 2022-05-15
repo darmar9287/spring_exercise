@@ -8,6 +8,8 @@ import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.utils.JwtUtils;
 import io.jsonwebtoken.Jwt;
+import org.bson.types.ObjectId;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,8 +28,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.thymeleaf.spring5.expression.Mvc;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -146,7 +153,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(ticketId))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(ticketTitle))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(ticketPrice))
@@ -223,6 +230,31 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(USER_NOT_AUTHORIZED_TO_UPDATE))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
+    }
+
+    @Test
+    public void shouldReturnTicketsListAndRespondWith200() throws Exception {
+        List<TicketEntity> ticketsList = new ArrayList<>();
+        for (int i = 0 ; i < 10 ; i++) {
+            ticketsList.add(new TicketEntity(ObjectId.get().toString(), "title" + i, new BigDecimal(10), "10" + i ));
+        }
+        int currentPage = 0;
+        int ticketPageSize = 5;
+        ticketRepository.saveAll(ticketsList);
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("/tickets/list/")
+                .requestAttr("page", currentPage)
+                .requestAttr("size", ticketPageSize)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.tickets", hasSize(ticketPageSize)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage").value(currentPage))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalTickets").value(ticketsList.size()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(ticketsList.size() / ticketPageSize))
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+        //List<Object> customersJsonArray = (List<Object>)result.getResponse().getBody().jsonPath().get("content");
     }
 
     private String fetchToken(MvcResult resultUser) {

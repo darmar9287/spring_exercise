@@ -1,6 +1,7 @@
 package com.spring.exercise.unittests.service;
 
 import com.spring.exercise.controller.model.TicketDTO;
+import com.spring.exercise.controller.model.TicketListResponse;
 import com.spring.exercise.controller.model.TicketRequest;
 import com.spring.exercise.exceptions.NotAuthorizedException;
 import com.spring.exercise.exceptions.NotFoundException;
@@ -16,9 +17,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,7 +53,8 @@ public class TicketServiceTests extends BaseIntegrationTests {
     private final static String FAKE_TICKET_TITLE = "fake_title";
     private final static BigDecimal FAKE_TICKET_PRICE = new BigDecimal(12);
 
-    public TicketServiceTests() {}
+    public TicketServiceTests() {
+    }
 
     @BeforeEach
     public void setUp() {
@@ -60,7 +70,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
     }
 
     @Test
-    void testCreateTicketShouldSuccessWhenRequestIsCorrect() {
+    public void testCreateTicketShouldSuccessWhenRequestIsCorrect() {
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(ticketRepository.save(any())).thenReturn(ticketEntity);
@@ -72,7 +82,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
     }
 
     @Test
-    void testShouldUpdateTicketSuccessWhenRequestIsCorrect() {
+    public void testShouldUpdateTicketSuccessWhenRequestIsCorrect() {
         //when
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticketEntity));
         when(ticketRepository.save(any())).thenReturn(ticketEntity);
@@ -84,7 +94,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
     }
 
     @Test
-    void testShouldNotPassVerifyWhenTicketIdIsNotCorrect() {
+    public void testShouldNotPassVerifyWhenTicketIdIsNotCorrect() {
         //when
         when(ticketRepository.findById(any())).thenReturn(Optional.empty());
         //then
@@ -92,12 +102,28 @@ public class TicketServiceTests extends BaseIntegrationTests {
     }
 
     @Test
-    void testShouldNotPassVerifyWhenTicketDoesNotBelongToUser() {
+    public void testShouldNotPassVerifyWhenTicketDoesNotBelongToUser() {
         //given
         String wrongUserId = "wrong_id";
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(wrongUserId);
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticketEntity));
         //then
         assertThrows(NotAuthorizedException.class, () -> ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN));
+    }
+
+    @Test
+    public void shouldReturnTicketsList() {
+        //given
+        List<TicketEntity> ticketsList = new ArrayList<>();
+        for (int i = 0 ; i < 10 ; i++) {
+            ticketsList.add(new TicketEntity(ObjectId.get().toString(), "title" + i, new BigDecimal(10), "10" + i ));
+        }
+        Page<TicketEntity> page = new PageImpl<>(ticketsList);
+        //when
+        PageRequest paging = PageRequest.of(0, 5);
+        when(ticketRepository.findAll(paging)).thenReturn(page);
+        //then
+        TicketListResponse ticketResponse = ticketService.generateTicketListResponse(0, 5);
+        assertEquals(10, ticketResponse.getTickets().size());
     }
 }
