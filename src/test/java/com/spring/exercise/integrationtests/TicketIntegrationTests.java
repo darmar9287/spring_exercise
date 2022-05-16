@@ -233,7 +233,11 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     public void shouldReturnTicketsListAndRespondWith200() throws Exception {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            ticketsList.add(new TicketEntity(ObjectId.get().toString(), "title" + i, new BigDecimal(10), ObjectId.get().toString()));
+            ticketsList.add(new TicketEntity(ObjectId.get().toString(),
+                    1,
+                    "title" + i,
+                    new BigDecimal(10),
+                    ObjectId.get().toString()));
         }
         int currentPage = 0;
         int ticketPageSize = 5;
@@ -255,7 +259,10 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldReturnTicketWhenIdProvided() throws Exception {
-        TicketEntity ticket = new TicketEntity(ObjectId.get().toString(), "title", new BigDecimal(10), ObjectId.get().toString());
+        TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
+                1,
+                "title", new BigDecimal(10),
+                ObjectId.get().toString());
         ticketRepository.save(ticket);
         String ticketId = ticket.getId();
         String title = ticket.getTitle();
@@ -277,7 +284,11 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldNotReturnTicketWhenIncorrectIdProvided() throws Exception {
-        TicketEntity ticket = new TicketEntity(ObjectId.get().toString(), "title", new BigDecimal(10), ObjectId.get().toString());
+        TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
+                1,
+                "title",
+                new BigDecimal(10),
+                ObjectId.get().toString());
         ticketRepository.save(ticket);
         String wrongTicketId = "wrong_ticket_id";
 

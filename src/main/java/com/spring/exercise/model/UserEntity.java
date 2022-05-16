@@ -3,6 +3,7 @@ package com.spring.exercise.model;
 import com.spring.exercise.utils.AppMessages;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,6 +19,8 @@ import java.util.Objects;
 public class UserEntity {
     @Id
     private String id;
+    @Version
+    private long version;
     @Indexed(unique = true)
     @Email
     private String userName;

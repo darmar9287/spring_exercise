@@ -11,14 +11,14 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TicketCreateResponse {
+public class TicketResponse {
         private String id;
         private String title;
         private BigDecimal price;
         private String userId;
 
-    public static TicketCreateResponse mapFromDTO(TicketDTO ticket) {
-        return new TicketCreateResponseBuilder().id(ticket.getId())
+    public static TicketResponse mapFromDTO(TicketDTO ticket) {
+        return new TicketResponseBuilder().id(ticket.getId())
                 .title(ticket.getTitle())
                 .price(ticket.getPrice())
                 .userId(ticket.getUserId()).build();

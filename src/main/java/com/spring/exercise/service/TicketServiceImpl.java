@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TicketServiceImpl {
 
+    private static final int MAX_TICKET_SIZE = 50;
     private final TicketRepository ticketRepository;
     private final JwtUtils jwtUtils;
 
@@ -39,7 +40,7 @@ public class TicketServiceImpl {
     public TicketDTO updateTicket(TicketRequest ticketRequest, String ticketId, String token) {
         final var ticketEntity = ticketRepository.findById(ticketId);
         verifyIfTicketBelongsToUser(ticketId, token);
-        final TicketEntity fetchedTicket = ticketEntity.get();
+        final var fetchedTicket = ticketEntity.get();
         fetchedTicket.setTitle(ticketRequest.getTitle());
         fetchedTicket.setPrice(ticketRequest.getPrice());
         ticketRepository.save(fetchedTicket);
@@ -47,13 +48,13 @@ public class TicketServiceImpl {
         return TicketDTO.mapFromEntity(fetchedTicket);
     }
 
-    private Page<TicketEntity> findAllTickets(Pageable paging) {
-        return ticketRepository.findAll(paging);
-    }
-
     public TicketListResponse generateTicketListResponse(int currentPage, int size) {
         Pageable paging = PageRequest.of(currentPage, size);
-        Page<TicketEntity> pageTickets = findAllTickets(paging);
+        if(size > MAX_TICKET_SIZE) {
+            paging = PageRequest.of(currentPage, MAX_TICKET_SIZE);
+        }
+
+        Page<TicketEntity> pageTickets = ticketRepository.findAll(paging);
         List<TicketDTO> tickets = pageTickets.getContent().stream().map(x -> TicketDTO.mapFromEntity(x)).collect(Collectors.toList());
 
         return new TicketListResponse(tickets, currentPage,pageTickets.getTotalElements(), pageTickets.getTotalPages()) ;

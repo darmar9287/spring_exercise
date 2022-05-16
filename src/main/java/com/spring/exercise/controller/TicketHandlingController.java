@@ -1,23 +1,20 @@
 package com.spring.exercise.controller;
 
-import com.spring.exercise.controller.model.TicketCreateResponse;
+import com.spring.exercise.controller.model.TicketResponse;
 import com.spring.exercise.controller.model.TicketDTO;
 import com.spring.exercise.controller.model.TicketListResponse;
 import com.spring.exercise.controller.model.TicketRequest;
-import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.service.TicketServiceImpl;
-import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.RequestBodyValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 
 @RequiredArgsConstructor
 @RestController
@@ -32,7 +29,7 @@ public class TicketHandlingController {
                                           @RequestHeader(name = "Authorization") String token) {
         RequestBodyValidator.check(errors);
         TicketDTO result = ticketService.createTicket(ticketRequest, token);
-        final var response = TicketCreateResponse.mapFromDTO(result);
+        final var response = TicketResponse.mapFromDTO(result);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -44,7 +41,7 @@ public class TicketHandlingController {
                                           @RequestHeader(name = "Authorization") String token) {
         RequestBodyValidator.check(errors);
         TicketDTO result = ticketService.updateTicket(ticketRequest, ticketId, token);
-        final var response = TicketCreateResponse.mapFromDTO(result);
+        final var response = TicketResponse.mapFromDTO(result);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -52,7 +49,7 @@ public class TicketHandlingController {
     @GetMapping("/list")
     public ResponseEntity<?> getAllTicketsPage(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
+            @RequestParam(defaultValue = "5") @Max(10) int size) {
             TicketListResponse ticketCreateResponse = ticketService.generateTicketListResponse(page, size);
             return ResponseEntity.status(HttpStatus.OK).body(ticketCreateResponse);
     }
@@ -60,7 +57,7 @@ public class TicketHandlingController {
     @GetMapping(value = "/show/{ticketId}", produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> showTicket(@PathVariable String ticketId) {
         TicketDTO result = ticketService.findTicketById(ticketId);
-        final var response = TicketCreateResponse.mapFromDTO(result);
+        final var response = TicketResponse.mapFromDTO(result);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
