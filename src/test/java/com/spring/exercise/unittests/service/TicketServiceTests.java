@@ -48,7 +48,6 @@ public class TicketServiceTests extends BaseIntegrationTests {
     private TicketRequest ticketRequest;
     private TicketEntity ticketEntity;
 
-    private final static String FAKE_TICKET_ID = "fake_ticket_id";
     private final static String FAKE_TOKEN = "fake_token";
     private final static String FAKE_USER_ID = "fake_user_id";
     private final static String FAKE_TICKET_TITLE = "fake_title";
@@ -117,7 +116,10 @@ public class TicketServiceTests extends BaseIntegrationTests {
         //given
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0 ; i < 10 ; i++) {
-            ticketsList.add(new TicketEntity(ObjectId.get().toString(), "title" + i, new BigDecimal(10), "10" + i ));
+            ticketsList.add(new TicketEntity(ObjectId.get().toString(),
+                    FAKE_TICKET_TITLE + i,
+                    FAKE_TICKET_PRICE,
+                    ObjectId.get().toString()));
         }
         Page<TicketEntity> page = new PageImpl<>(ticketsList);
         //when

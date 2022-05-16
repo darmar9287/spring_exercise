@@ -19,8 +19,6 @@ import java.util.Objects;
 public class UserEntity {
     @Id
     private String id;
-    @Version
-    private long version;
     @Indexed(unique = true)
     @Email
     private String userName;

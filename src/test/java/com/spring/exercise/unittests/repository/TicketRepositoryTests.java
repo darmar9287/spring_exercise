@@ -34,6 +34,7 @@ public class TicketRepositoryTests {
     private final static BigDecimal TICKET_PRICE = new BigDecimal(13);
     private final static String USER_ID = "user_id";
 
+
     @BeforeEach
     public void dataSetup() {
         ticket = new TicketEntity();
@@ -64,7 +65,10 @@ public class TicketRepositoryTests {
         //given
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0 ; i < 10 ; i++) {
-            ticketsList.add(new TicketEntity(ObjectId.get().toString(), "title" + i, new BigDecimal(10), "10" + i ));
+            ticketsList.add(new TicketEntity(ObjectId.get().toString(),
+                    TICKET_TITLE + i,
+                    TICKET_PRICE,
+                    ObjectId.get().toString()));
         }
         //when
         ticketRepository.saveAll(ticketsList);

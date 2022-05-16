@@ -168,7 +168,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String userId = jwtUtils.extractId(tokenValue);
         String ticketCreateResponse = createTicketForUser(userId, token).getResponse().getContentAsString();
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
-        TicketRequest incorrectTicketRequest = new TicketRequest("title", new BigDecimal(0));
+        TicketRequest incorrectTicketRequest = new TicketRequest(TICKET_TITLE, new BigDecimal(0));
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/tickets/update/" + ticketId)
                         .content(mapToJson(incorrectTicketRequest))
@@ -234,9 +234,8 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
-                    1,
-                    "title" + i,
-                    new BigDecimal(10),
+                    TICKET_TITLE,
+                    TICKET_PRICE,
                     ObjectId.get().toString()));
         }
         int currentPage = 0;
@@ -260,7 +259,6 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldReturnTicketWhenIdProvided() throws Exception {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
-                1,
                 "title", new BigDecimal(10),
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -285,9 +283,8 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldNotReturnTicketWhenIncorrectIdProvided() throws Exception {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
-                1,
-                "title",
-                new BigDecimal(10),
+                TICKET_TITLE,
+                TICKET_PRICE,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
         String wrongTicketId = "wrong_ticket_id";
