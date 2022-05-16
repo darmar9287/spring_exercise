@@ -259,7 +259,8 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldReturnTicketWhenIdProvided() throws Exception {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
-                "title", new BigDecimal(10),
+                TICKET_TITLE,
+                TICKET_PRICE,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
         String ticketId = ticket.getId();

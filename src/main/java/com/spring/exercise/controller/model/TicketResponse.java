@@ -1,5 +1,6 @@
 package com.spring.exercise.controller.model;
 
+import com.spring.exercise.model.TicketEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +23,12 @@ public class TicketResponse {
                 .title(ticket.getTitle())
                 .price(ticket.getPrice())
                 .userId(ticket.getUserId()).build();
+    }
+
+    public static TicketResponse mapFromEntity(TicketEntity ticketEntity) {
+        return new TicketResponse.TicketResponseBuilder().id(ticketEntity.getId())
+                .title(ticketEntity.getTitle())
+                .price(ticketEntity.getPrice())
+                .userId(ticketEntity.getUserId()).build();
     }
 }

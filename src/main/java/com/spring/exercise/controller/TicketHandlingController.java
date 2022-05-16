@@ -49,7 +49,7 @@ public class TicketHandlingController {
     @GetMapping("/list")
     public ResponseEntity<?> getAllTicketsPage(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") @Max(10) int size) {
+            @RequestParam(defaultValue = "5") int size) {
             TicketListResponse ticketCreateResponse = ticketService.generateTicketListResponse(page, size);
             return ResponseEntity.status(HttpStatus.OK).body(ticketCreateResponse);
     }

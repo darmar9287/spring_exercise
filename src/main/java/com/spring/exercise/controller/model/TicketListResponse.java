@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketListResponse {
-    private List<TicketDTO> tickets;
+    private List<TicketResponse> tickets;
     private int currentPage;
     private long totalTickets;
     private int totalPages;

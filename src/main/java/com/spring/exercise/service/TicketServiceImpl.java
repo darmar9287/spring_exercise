@@ -55,7 +55,7 @@ public class TicketServiceImpl {
         }
 
         Page<TicketEntity> pageTickets = ticketRepository.findAll(paging);
-        List<TicketDTO> tickets = pageTickets.getContent().stream().map(x -> TicketDTO.mapFromEntity(x)).collect(Collectors.toList());
+        List<TicketResponse> tickets = pageTickets.getContent().stream().map(x -> TicketResponse.mapFromEntity(x)).collect(Collectors.toList());
 
         return new TicketListResponse(tickets, currentPage,pageTickets.getTotalElements(), pageTickets.getTotalPages()) ;
     }
