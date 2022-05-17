@@ -5,6 +5,7 @@ import com.spring.exercise.controller.model.UserDTO;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,11 +47,6 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Autowired
     private JwtUtils jwtUtils;
 
-    private final static String EMAIL_EXISTS_ERROR = "Email in use";
-    private final static String EMAIL_WRONG_FORMAT_ERROR = "Must be a well-formed email address";
-    private final static String PASSWORD_SIZE_ERROR = "Size must be between 4 and 20";
-    private final static String INCORRECT_CREDENTIALS_ERROR = "Invalid login credentials";
-
     @BeforeEach
     public void setUp() {
         authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
@@ -88,7 +84,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_EXISTS_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_EXISTS_ERROR));
     }
 
     @Test
@@ -104,7 +100,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_WRONG_FORMAT_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_FORMAT_ERROR));
     }
 
     @Test
@@ -120,7 +116,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(PASSWORD_SIZE_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.PASSWORD_SIZE_ERROR));
     }
 
     @Test
@@ -150,7 +146,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(INCORRECT_CREDENTIALS_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.INCORRECT_CREDENTIALS_ERROR));
     }
 
     @Test
@@ -164,7 +160,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(EMAIL_WRONG_FORMAT_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_FORMAT_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -179,7 +175,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(PASSWORD_SIZE_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.PASSWORD_SIZE_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -217,6 +213,6 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(NOT_AUTHORIZED_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR));
     }
 }
