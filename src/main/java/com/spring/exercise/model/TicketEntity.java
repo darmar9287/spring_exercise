@@ -18,6 +18,8 @@ import java.math.BigDecimal;
 public class TicketEntity {
     @Id
     private String id;
+    @Version
+    private Long version;
     @NotBlank(message = AppMessages.TICKET_TITLE_BLANK_ERROR)
     private String title;
     @DecimalMin(value = "0.5", inclusive = false, message = AppMessages.TICKET_PRICE_TOO_LOW_ERROR)

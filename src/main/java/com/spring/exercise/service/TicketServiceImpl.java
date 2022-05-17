@@ -57,7 +57,11 @@ public class TicketServiceImpl {
         Page<TicketEntity> pageTickets = ticketRepository.findAll(paging);
         List<TicketResponse> tickets = pageTickets.getContent().stream().map(x -> TicketResponse.mapFromEntity(x)).collect(Collectors.toList());
 
-        return new TicketListResponse(tickets, currentPage,pageTickets.getTotalElements(), pageTickets.getTotalPages()) ;
+        return TicketListResponse.builder().tickets(tickets).
+                currentPage(currentPage).
+                totalTickets(pageTickets.getTotalElements()).
+                totalPages(pageTickets.getTotalPages()).
+                build();
     }
 
     public TicketDTO findTicketById(String id) {

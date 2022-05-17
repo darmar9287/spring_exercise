@@ -8,9 +8,7 @@ import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
-import io.jsonwebtoken.Jwt;
 import org.bson.types.ObjectId;
-import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,16 +24,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.thymeleaf.spring5.expression.Mvc;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -53,6 +48,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
 
     private TicketRequest ticketRequest;
     private static final String TICKET_TITLE = "ticket_title";
+    private static final Long VERSION = 1L;
     private static final BigDecimal TICKET_PRICE = new BigDecimal(13);
 
     @BeforeEach
@@ -234,6 +230,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
+                    VERSION,
                     TICKET_TITLE,
                     TICKET_PRICE,
                     ObjectId.get().toString()));
@@ -259,6 +256,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldReturnTicketWhenIdProvided() throws Exception {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
+                VERSION,
                 TICKET_TITLE,
                 TICKET_PRICE,
                 ObjectId.get().toString());
@@ -284,6 +282,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldNotReturnTicketWhenIncorrectIdProvided() throws Exception {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
+                VERSION,
                 TICKET_TITLE,
                 TICKET_PRICE,
                 ObjectId.get().toString());

@@ -9,7 +9,6 @@ import com.spring.exercise.integrationtests.BaseIntegrationTests;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.service.TicketServiceImpl;
-import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,14 +20,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,6 +44,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
     private TicketRequest ticketRequest;
     private TicketEntity ticketEntity;
 
+    private final static long FAKE_TICKET_VERSION = 1;
     private final static String FAKE_TOKEN = "fake_token";
     private final static String FAKE_USER_ID = "fake_user_id";
     private final static String FAKE_TICKET_TITLE = "fake_title";
@@ -117,6 +114,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0 ; i < 10 ; i++) {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
+                    FAKE_TICKET_VERSION,
                     FAKE_TICKET_TITLE + i,
                     FAKE_TICKET_PRICE,
                     ObjectId.get().toString()));

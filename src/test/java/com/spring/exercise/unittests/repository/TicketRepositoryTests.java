@@ -1,9 +1,7 @@
 package com.spring.exercise.unittests.repository;
 
 import com.spring.exercise.model.TicketEntity;
-import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.TicketRepository;
-import com.spring.exercise.repository.UserRepository;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,9 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
@@ -37,11 +33,11 @@ public class TicketRepositoryTests {
 
     @BeforeEach
     public void dataSetup() {
-        ticket = new TicketEntity();
-        ticket.setId(ObjectId.get().toString());
-        ticket.setTitle(TICKET_TITLE);
-        ticket.setPrice(TICKET_PRICE);
-        ticket.setUserId(USER_ID);
+        ticket = new TicketEntity(ObjectId.get().toString(), 0L, TICKET_TITLE, TICKET_PRICE, USER_ID);
+//        ticket.setId(ObjectId.get().toString());
+//        ticket.setTitle(TICKET_TITLE);
+//        ticket.setPrice(TICKET_PRICE);
+//        ticket.setUserId(USER_ID);
     }
 
     @AfterEach
@@ -66,6 +62,7 @@ public class TicketRepositoryTests {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0 ; i < 10 ; i++) {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
+                    2L,
                     TICKET_TITLE + i,
                     TICKET_PRICE,
                     ObjectId.get().toString()));
