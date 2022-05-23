@@ -1,7 +1,5 @@
 package com.spring.exercise.controller;
 
-import com.spring.exercise.controller.model.ticket.TicketDTO;
-import com.spring.exercise.controller.model.ticket.TicketListResponse;
 import com.spring.exercise.controller.model.ticket.TicketRequest;
 import com.spring.exercise.service.TicketServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
@@ -25,7 +23,7 @@ public class TicketHandlingController {
                                           Errors errors,
                                           @RequestHeader(name = "Authorization") String token) {
         RequestBodyValidator.check(errors);
-        TicketDTO result = ticketService.createTicket(ticketRequest, token);
+        var result = ticketService.createTicket(ticketRequest, token);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -36,7 +34,7 @@ public class TicketHandlingController {
                                           @PathVariable String ticketId,
                                           @RequestHeader(name = "Authorization") String token) {
         RequestBodyValidator.check(errors);
-        TicketDTO result = ticketService.updateTicket(ticketRequest, ticketId, token);
+        var result = ticketService.updateTicket(ticketRequest, ticketId, token);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
@@ -45,13 +43,13 @@ public class TicketHandlingController {
     public ResponseEntity<?> getAllTicketsPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-            TicketListResponse ticketCreateResponse = ticketService.generateTicketListResponse(page, size);
+            var ticketCreateResponse = ticketService.generateTicketListResponse(page, size);
             return ResponseEntity.status(HttpStatus.OK).body(ticketCreateResponse);
     }
 
     @GetMapping(value = "/show/{ticketId}", produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> showTicket(@PathVariable String ticketId) {
-        TicketDTO result = ticketService.findTicketById(ticketId);
+        var result = ticketService.findTicketById(ticketId);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }

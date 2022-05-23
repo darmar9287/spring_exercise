@@ -1,7 +1,6 @@
 package com.spring.exercise.controller;
 
 import com.spring.exercise.controller.model.user.AuthRequest;
-import com.spring.exercise.controller.model.user.UserDTO;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class AuthenticationController {
     @PostMapping(value = "/sign_up", produces = "application/json;charset=UTF-8")
     private ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
         RequestBodyValidator.check(errors);
-        UserDTO result = userServiceImpl.createUser(authRequest);
+        var result = userServiceImpl.createUser(authRequest);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authorization", "Bearer " + result.getJwt());
 

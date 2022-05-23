@@ -1,7 +1,6 @@
 package com.spring.exercise.controller;
 
 import com.spring.exercise.controller.model.order.OrderCreateRequest;
-import com.spring.exercise.controller.model.order.OrderResponse;
 import com.spring.exercise.service.OrderServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,7 +23,7 @@ public class OrderController {
                                                Errors errors,
                                                @RequestHeader(name = "Authorization") String token) {
         RequestBodyValidator.check(errors);
-        OrderResponse result = orderService.createTicketOrder(orderCreateRequest.getTicketId(), token);
+        var result = orderService.createTicketOrder(orderCreateRequest.getTicketId(), token);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -33,7 +31,7 @@ public class OrderController {
     @GetMapping(produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> getTicketOrdersForUser(
             @RequestHeader(name = "Authorization") String token) {
-        List<OrderResponse> result = orderService.getTicketOrdersForUser(token);
+        var result = orderService.getTicketOrdersForUser(token);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
@@ -41,7 +39,7 @@ public class OrderController {
     @GetMapping(value = "/{orderId}", produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> getTicketOrderForUser(@PathVariable String orderId,
                                                    @RequestHeader(name = "Authorization") String token) {
-        OrderResponse result = orderService.getTicketOrderForUser(token, orderId);
+        var result = orderService.getTicketOrderForUser(token, orderId);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
