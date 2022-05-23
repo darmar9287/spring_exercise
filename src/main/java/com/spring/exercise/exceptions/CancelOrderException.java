@@ -5,10 +5,10 @@ import com.spring.exercise.utils.ErrorResponse;
 
 import java.util.List;
 
-public class NotFoundException extends CustomExceptions {
+public class CancelOrderException extends CustomExceptions {
 
-    public NotFoundException(String ticketId) {
-        super(AppMessages.TICKET_NOT_FOUND_ERROR + ticketId, 404);
+    public CancelOrderException(String orderId) {
+        super("Cannot cancel order with id: " + orderId + ". Status is COMPLETED/CANCELLED" ,400);
     }
 
     @Override

@@ -1,8 +1,10 @@
 package com.spring.exercise.service;
 
-import com.spring.exercise.controller.model.*;
+import com.spring.exercise.controller.model.ticket.TicketDTO;
+import com.spring.exercise.controller.model.ticket.TicketListResponse;
+import com.spring.exercise.controller.model.ticket.TicketRequest;
 import com.spring.exercise.exceptions.NotAuthorizedException;
-import com.spring.exercise.exceptions.NotFoundException;
+import com.spring.exercise.exceptions.TicketNotFoundException;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.utils.JwtUtils;
@@ -12,9 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -55,7 +55,7 @@ public class TicketServiceImpl {
         }
 
         Page<TicketEntity> pageTickets = ticketRepository.findAll(paging);
-        List<TicketResponse> tickets = pageTickets.getContent().stream().map(x -> TicketResponse.mapFromEntity(x)).collect(Collectors.toList());
+        List<TicketDTO> tickets = pageTickets.getContent().stream().map(x -> TicketDTO.mapFromEntity(x)).collect(Collectors.toList());
 
         return TicketListResponse.builder().tickets(tickets).
                 currentPage(currentPage).
@@ -67,7 +67,7 @@ public class TicketServiceImpl {
     public TicketDTO findTicketById(String id) {
         Optional<TicketEntity> ticketEntity = ticketRepository.findById(id);
         if(ticketEntity.isEmpty()) {
-            throw new NotFoundException(id);
+            throw new TicketNotFoundException(id);
         }
         return TicketDTO.mapFromEntity(ticketEntity.get());
     }
@@ -75,7 +75,7 @@ public class TicketServiceImpl {
     private void verifyIfTicketBelongsToUser(String ticketId, String token) {
         Optional<TicketEntity> ticket = ticketRepository.findById(ticketId);
         if(ticket.isEmpty()) {
-            throw new NotFoundException(ticketId);
+            throw new TicketNotFoundException(ticketId);
         }
         String userIdFromToken = jwtUtils.fetchUserIdFromToken(token);
         if(ticket.isPresent() && !ticket.get().getUserId().equals(userIdFromToken)) {

@@ -1,9 +1,9 @@
 package com.spring.exercise.service;
 
-import com.spring.exercise.controller.model.AuthRequest;
-import com.spring.exercise.controller.model.AuthResponse;
-import com.spring.exercise.controller.model.CurrentUserResponse;
-import com.spring.exercise.controller.model.UserDTO;
+import com.spring.exercise.controller.model.user.AuthRequest;
+import com.spring.exercise.controller.model.user.AuthResponse;
+import com.spring.exercise.controller.model.user.CurrentUserResponse;
+import com.spring.exercise.controller.model.user.UserDTO;
 import com.spring.exercise.exceptions.InvalidCredentialsException;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
 import com.spring.exercise.model.UserEntity;
@@ -20,11 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 
 @Service

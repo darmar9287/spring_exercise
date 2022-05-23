@@ -1,4 +1,4 @@
-package com.spring.exercise.controller.model;
+package com.spring.exercise.controller.model.user;
 
 import com.spring.exercise.utils.AppMessages;
 import lombok.AllArgsConstructor;
@@ -13,6 +13,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthRequest {
+    @NotBlank
     @Email(message = AppMessages.EMAIL_FORMAT_ERROR)
     private String username;
     @NotBlank

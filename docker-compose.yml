@@ -1,0 +1,20 @@
+version: '3'
+services:
+  mongo:
+    image: 'mongo'
+    container_name: 'mongo'
+    ports:
+      - 27017:27017
+  mongo-test:
+    image: 'mongo'
+    container_name: 'mongo-test'
+    ports:
+      - 27018:27017
+  sqs:
+    image: 'softwaremill/elasticmq'
+    container_name: 'sqs'
+    ports:
+      - 9324:9324
+      - 9325:9325
+    volumes:
+      - "$PWD/config/custom.conf:/opt/elasticmq.conf"

@@ -1,4 +1,4 @@
-package com.spring.exercise.controller.model;
+package com.spring.exercise.controller.model.user;
 
 import com.spring.exercise.model.UserEntity;
 import lombok.Data;

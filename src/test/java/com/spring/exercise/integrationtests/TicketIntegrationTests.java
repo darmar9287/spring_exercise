@@ -1,8 +1,8 @@
 package com.spring.exercise.integrationtests;
 
 import com.jayway.jsonpath.JsonPath;
-import com.spring.exercise.controller.model.AuthRequest;
-import com.spring.exercise.controller.model.TicketRequest;
+import com.spring.exercise.controller.model.user.AuthRequest;
+import com.spring.exercise.controller.model.ticket.TicketRequest;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(locations = "/test.properties")
 public class TicketIntegrationTests extends BaseIntegrationTests {
     @Autowired
     private MockMvc mockMvc;
@@ -48,7 +50,6 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
 
     private TicketRequest ticketRequest;
     private static final String TICKET_TITLE = "ticket_title";
-    private static final Long VERSION = 1L;
     private static final BigDecimal TICKET_PRICE = new BigDecimal(13);
 
     @BeforeEach
@@ -107,7 +108,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_TITLE_BLANK_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -194,7 +195,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_TITLE_BLANK_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -230,9 +231,9 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
-                    VERSION,
                     TICKET_TITLE,
                     TICKET_PRICE,
+                    ObjectId.get().toString(),
                     ObjectId.get().toString()));
         }
         int currentPage = 0;
@@ -256,9 +257,9 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldReturnTicketWhenIdProvided() throws Exception {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
-                VERSION,
                 TICKET_TITLE,
                 TICKET_PRICE,
+                ObjectId.get().toString(),
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
         String ticketId = ticket.getId();
@@ -282,9 +283,9 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldNotReturnTicketWhenIncorrectIdProvided() throws Exception {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
-                VERSION,
                 TICKET_TITLE,
                 TICKET_PRICE,
+                ObjectId.get().toString(),
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
         String wrongTicketId = "wrong_ticket_id";

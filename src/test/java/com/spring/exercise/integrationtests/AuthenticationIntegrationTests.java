@@ -1,7 +1,7 @@
 package com.spring.exercise.integrationtests;
 
-import com.spring.exercise.controller.model.AuthRequest;
-import com.spring.exercise.controller.model.UserDTO;
+import com.spring.exercise.controller.model.user.AuthRequest;
+import com.spring.exercise.controller.model.user.UserDTO;
 import com.spring.exercise.model.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
@@ -16,25 +16,25 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(locations = "/test.properties")
 class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Autowired
     private MockMvc mockMvc;
