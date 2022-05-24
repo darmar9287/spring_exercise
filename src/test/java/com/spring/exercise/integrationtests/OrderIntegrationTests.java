@@ -1,6 +1,5 @@
 package com.spring.exercise.integrationtests;
 
-import com.jayway.jsonpath.JsonPath;
 import com.spring.exercise.controller.model.order.OrderCreateRequest;
 import com.spring.exercise.controller.model.ticket.TicketRequest;
 import com.spring.exercise.controller.model.user.AuthRequest;
@@ -28,14 +27,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -459,7 +456,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
-    public void shouldResponseWith404WhenUserIsNotOrderOwnerAndTryDelete() throws Exception {
+    public void shouldResponseWith404WhenUserIsNotOrderOwnerAndTryCancel() throws Exception {
         MvcResult user = createDefaultUser();
         int tokenIndexStart = 7;
         String token = fetchToken(user);
@@ -488,7 +485,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
 
         String expectedError = "Order with id " + order.getId() + " was not found";
         mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/orders/delete/" + order.getId())
+                        .delete("/orders/cancel/" + order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -499,7 +496,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
-    public void shouldResponseWith404WhenUserDeleteNotFoundOrder() throws Exception {
+    public void shouldResponseWith404WhenUserCancelNotFoundOrder() throws Exception {
         MvcResult user = createDefaultUser();
         int tokenIndexStart = 7;
         String token = fetchToken(user);
@@ -529,7 +526,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         String fakeOrderId = "fake_order_id";
         String expectedError = "Order with id " + fakeOrderId + " was not found";
         mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/orders/delete/" + fakeOrderId)
+                        .delete("/orders/cancel/" + fakeOrderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -540,7 +537,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
-    public void shouldResponseWith401WhenUserDeleteOrderAndIsNotAuthenticated() throws Exception {
+    public void shouldResponseWith401WhenUserCancelOrderAndIsNotAuthenticated() throws Exception {
         MvcResult user = createDefaultUser();
         int tokenIndexStart = 7;
         String token = fetchToken(user);
@@ -568,7 +565,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         orderRepository.save(order);
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/orders/delete/" + order.getId())
+                        .delete("/orders/cancel/" + order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -608,7 +605,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
 
         String expectedError = "Cannot cancel order with id: " + order.getId() + ". Status is COMPLETED/CANCELLED";
         mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/orders/delete/" + order.getId())
+                        .delete("/orders/cancel/" + order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -619,7 +616,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
-    public void shouldResponseWith200AndEmptyBodyWhenUserDeleteHisOrder() throws Exception {
+    public void shouldResponseWith200AndEmptyBodyWhenUserCancelHisOrder() throws Exception {
         MvcResult user = createDefaultUser();
         int tokenIndexStart = 7;
         String token = fetchToken(user);
@@ -649,7 +646,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         assertTrue(savedOrder.isPresent());
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/orders/delete/" + order.getId())
+                        .delete("/orders/cancel/" + order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))

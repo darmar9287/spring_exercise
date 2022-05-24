@@ -6,7 +6,6 @@ import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.utils.OrderStatus;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
@@ -32,29 +30,10 @@ public class OrderRepositoryTests {
     @Autowired
     private OrderRepository orderRepository;
 
-    private OrderEntity order;
     private final static String TICKET_TITLE = "fake_title";
     private final static BigDecimal TICKET_PRICE = new BigDecimal(13);
     private final static String USER_ID = "1";
     private final static TicketEntity ticket = new TicketEntity();
-
-    @BeforeEach
-    public void dataSetup() {
-        ticket.setId(ObjectId.get().toString());
-        ticket.setTitle(TICKET_TITLE);
-        ticket.setPrice(TICKET_PRICE);
-        ticket.setUserId(ObjectId.get().toString());
-        ticket.setOrderId(ObjectId.get().toString());
-        order = new OrderEntity(USER_ID,
-                ObjectId.get().toString(),
-                OrderStatus.CREATED,
-                LocalDateTime.now(),
-                new TicketEntity(ObjectId.get().toString(),
-                        TICKET_TITLE,
-                        TICKET_PRICE,
-                        ObjectId.get().toString(),
-                        ObjectId.get().toString()));
-    }
 
     @AfterEach
     public void tearDown() {
@@ -76,11 +55,12 @@ public class OrderRepositoryTests {
                 });
         IntStream.range(0, 10)
                 .forEach(x -> {
-                    orders.add(new OrderEntity(ObjectId.get().toString(),
-                            USER_ID,
-                            OrderStatus.CREATED,
-                            LocalDateTime.now(),
-                            tickets.get(x)));
+                    orders.add(OrderEntity.builder()
+                            .id(ObjectId.get().toString())
+                            .userId(USER_ID)
+                            .orderStatus(OrderStatus.CREATED)
+                            .expiresAt(LocalDateTime.now())
+                            .ticket(tickets.get(x)).build());
                 });
         //when
         orderRepository.saveAll(orders);

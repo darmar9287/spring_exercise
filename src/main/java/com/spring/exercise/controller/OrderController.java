@@ -44,10 +44,10 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    @DeleteMapping(value = "/delete/{orderId}", produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> deleteOrder(@PathVariable String orderId,
+    @DeleteMapping(value = "/cancel/{orderId}", produces = "application/json;charset=UTF-8")
+    public ResponseEntity<?> cancelOrder(@PathVariable String orderId,
                                          @RequestHeader(name = "Authorization") String token) {
-        orderService.deleteOrder(token, orderId);
+        orderService.cancelOrder(token, orderId);
 
         return ResponseEntity.noContent().build();
     }

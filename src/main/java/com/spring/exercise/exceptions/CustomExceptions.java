@@ -3,7 +3,6 @@ package com.spring.exercise.exceptions;
 import com.spring.exercise.utils.ErrorResponse;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MissingRequestHeaderException;
 
 import java.util.List;
 import java.util.Map;

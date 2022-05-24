@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class TicketListResponse {
-    private List<TicketDTO> tickets;
+    private List<TicketResponse> tickets;
     private int currentPage;
     private long totalTickets;
     private int totalPages;

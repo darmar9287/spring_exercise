@@ -33,11 +33,12 @@ public class TicketRepositoryTests {
 
     @BeforeEach
     public void dataSetup() {
-        ticket = new TicketEntity(ObjectId.get().toString(),
-                TICKET_TITLE,
-                TICKET_PRICE,
-                ObjectId.get().toString(),
-                ObjectId.get().toString());
+        ticket = TicketEntity.builder()
+                .id(ObjectId.get().toString())
+                .orderId(ObjectId.get().toString())
+                .userId(ObjectId.get().toString())
+                .price(TICKET_PRICE)
+                .title(TICKET_TITLE).build();
     }
 
     @AfterEach

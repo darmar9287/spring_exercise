@@ -1,6 +1,5 @@
 package com.spring.exercise.controller.model.order;
 
-import com.spring.exercise.model.OrderEntity;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.utils.OrderStatus;
 import lombok.Builder;
@@ -18,13 +17,4 @@ public class OrderDTO {
     private final OrderStatus orderStatus;
     private final LocalDateTime expiresAt;
     private final TicketEntity ticket;
-
-    public static OrderDTO mapFromEntity(OrderEntity orderEntity) {
-        return new OrderDTOBuilder().id(orderEntity.getId())
-                .userId(orderEntity.getUserId())
-                .orderStatus(orderEntity.getOrderStatus())
-                .expiresAt(orderEntity.getExpiresAt())
-                .ticket(orderEntity.getTicket()
-                ).build();
-    }
 }

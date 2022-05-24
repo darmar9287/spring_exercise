@@ -3,6 +3,7 @@ package com.spring.exercise.service;
 import com.spring.exercise.controller.model.ticket.TicketDTO;
 import com.spring.exercise.controller.model.ticket.TicketListResponse;
 import com.spring.exercise.controller.model.ticket.TicketRequest;
+import com.spring.exercise.controller.model.ticket.TicketResponse;
 import com.spring.exercise.exceptions.NotAuthorizedException;
 import com.spring.exercise.exceptions.TicketNotFoundException;
 import com.spring.exercise.model.TicketEntity;
@@ -55,7 +56,13 @@ public class TicketServiceImpl {
         }
 
         Page<TicketEntity> pageTickets = ticketRepository.findAll(paging);
-        List<TicketDTO> tickets = pageTickets.getContent().stream().map(x -> TicketDTO.mapFromEntity(x)).collect(Collectors.toList());
+        List<TicketResponse> tickets = pageTickets.getContent().stream().map(ticket -> TicketResponse.builder()
+                .id(ticket.getId())
+                .orderId(ticket.getOrderId())
+                .price(ticket.getPrice())
+                .title(ticket.getTitle())
+                .userId(ticket.getUserId())
+                .build()).collect(Collectors.toList());
 
         return TicketListResponse.builder().tickets(tickets).
                 currentPage(currentPage).

@@ -97,7 +97,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         //when
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
         //then
-        assertThrows(TicketAlreadyReservedException.class, () -> orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN));
+        assertThrows(BadRequestException.class, () -> orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
         //then
-        assertThrows(OwnTicketPurchaseException.class, () -> orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN));
+        assertThrows(BadRequestException.class, () -> orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN));
     }
 
     @Test
@@ -190,7 +190,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
         //then
-        orderService.deleteOrder(FAKE_TOKEN, FAKE_USER_ID);
+        orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID);
         verify(orderRepository, times(1)).delete(order);
         assertEquals(order.getOrderStatus(), OrderStatus.CANCELLED);
     }
@@ -203,7 +203,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.empty());
         //then
-        assertThrows(OrderNotFoundException.class, () -> orderService.deleteOrder(FAKE_TOKEN, FAKE_USER_ID));
+        assertThrows(OrderNotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
     }
 
     @Test
@@ -214,6 +214,6 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
         //then
-        assertThrows(OrderNotFoundException.class, () -> orderService.deleteOrder(FAKE_TOKEN, FAKE_USER_ID));
+        assertThrows(OrderNotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
     }
 }

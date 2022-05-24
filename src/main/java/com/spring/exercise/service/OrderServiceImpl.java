@@ -6,6 +6,7 @@ import com.spring.exercise.model.OrderEntity;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.TicketRepository;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
 import lombok.RequiredArgsConstructor;
@@ -39,21 +40,22 @@ public class OrderServiceImpl {
         TicketEntity foundTicket = optionalTicket.get();
         if (checkIfTicketIsAlreadyBooked(foundTicket)) {
             log.warn("Ticket with id %s is already booked", ticketId);
-            throw new TicketAlreadyReservedException();
+            throw new BadRequestException(AppMessages.TICKET_ALREADY_BOOKED_ERROR);
         }
         String userId = jwtUtils.fetchUserIdFromToken(token);
         if (checkIfUserIsTicketOwner(userId, foundTicket)) {
             log.warn("User tried to book his own ticket");
-            throw new OwnTicketPurchaseException();
+            throw new BadRequestException(AppMessages.OWN_TICKET_PURCHASE_ERROR);
         }
         foundTicket.setOrderId(ObjectId.get().toString());
         ticketRepository.save(foundTicket);
-        OrderEntity order = new OrderEntity();
         LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(expirationSeconds);
-        order.setOrderStatus(OrderStatus.CREATED);
-        order.setTicket(foundTicket);
-        order.setUserId(userId);
-        order.setExpiresAt(expiresAt);
+        OrderEntity order = OrderEntity.builder()
+                .expiresAt(expiresAt)
+                .orderStatus(OrderStatus.CREATED)
+                .userId(userId)
+                .ticket(foundTicket)
+                .build();
         orderRepository.save(order);
         BigDecimal price = foundTicket.getPrice();
 
@@ -98,7 +100,7 @@ public class OrderServiceImpl {
                 .build();
     }
 
-    public void deleteOrder(String token, String orderId) {
+    public void cancelOrder(String token, String orderId) {
         String userId = jwtUtils.fetchUserIdFromToken(token);
         Optional<OrderEntity> order = orderRepository.findById(orderId);
         if (order.isEmpty()) {
@@ -115,11 +117,12 @@ public class OrderServiceImpl {
             orderRepository.delete(foundOrder);
             return;
         }
-        throw new CancelOrderException(orderId);
+        String exceptionMessage = "Cannot cancel order with id: " + orderId + ". Status is COMPLETED/CANCELLED";
+        throw new BadRequestException(exceptionMessage);
     }
 
     private boolean checkIfTicketIsAlreadyBooked(TicketEntity foundTicket) {
-            return foundTicket.getOrderId() != null;
+        return foundTicket.getOrderId() != null;
     }
 
     private boolean checkIfUserIsTicketOwner(String userId, TicketEntity foundTicket) {
