@@ -14,5 +14,4 @@ public class TicketResponse {
     private final String title;
     private final BigDecimal price;
     private final String userId;
-    private final String orderId;
 }

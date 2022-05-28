@@ -64,7 +64,6 @@ public class TicketServiceImpl {
         Page<TicketEntity> pageTickets = ticketRepository.findAll(paging);
         List<TicketResponse> tickets = pageTickets.getContent().stream().map(ticket -> TicketResponse.builder()
                 .id(ticket.getId())
-                .orderId(ticket.getOrderId())
                 .price(ticket.getPrice())
                 .title(ticket.getTitle())
                 .userId(ticket.getUserId())

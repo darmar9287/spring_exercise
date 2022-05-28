@@ -90,7 +90,6 @@ public class OrderServiceImpl {
         List<OrderEntity> orders = orderRepository.findAllByUserId(userId);
         return orders.stream()
                 .map(o -> OrderResponse.builder()
-                        .id(o.getId())
                         .orderStatus(o.getOrderStatus())
                         .expiration(o.getExpiresAt())
                         .ticket(new OrderResponse.TicketOrderResponse(o.getTicket().getTitle(), o.getTicket().getPrice()))
@@ -101,15 +100,13 @@ public class OrderServiceImpl {
     public OrderResponse getTicketOrderForUser(String token, String orderId) {
         String userId = jwtUtils.fetchUserIdFromToken(token);
         Optional<OrderEntity> order = orderRepository.findById(orderId);
-        String errorMessage = null;
+        String errorMessage = "Order with id " + orderId + " was not found";
         if (order.isEmpty()) {
-            errorMessage = "Order with id " + orderId + " was not found";
             log.warn(errorMessage);
             throw new NotFoundException(errorMessage);
         }
         OrderEntity foundOrder = order.get();
         if (!checkIfUserIsOrderOwner(userId, foundOrder)) {
-            errorMessage = "Order with id " + orderId + " was not found";
             log.warn(errorMessage);
             throw new NotFoundException(errorMessage);
         }
