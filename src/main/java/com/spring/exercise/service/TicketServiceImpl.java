@@ -4,8 +4,9 @@ import com.spring.exercise.controller.model.ticket.TicketDTO;
 import com.spring.exercise.controller.model.ticket.TicketListResponse;
 import com.spring.exercise.controller.model.ticket.TicketRequest;
 import com.spring.exercise.controller.model.ticket.TicketResponse;
+import com.spring.exercise.exceptions.BadRequestException;
 import com.spring.exercise.exceptions.NotAuthorizedException;
-import com.spring.exercise.exceptions.TicketNotFoundException;
+import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.utils.JwtUtils;
@@ -34,19 +35,24 @@ public class TicketServiceImpl {
         ticketEntity.setPrice(ticketRequest.getPrice());
         ticketEntity.setUserId(userId);
         ticketRepository.save(ticketEntity);
-
         return TicketDTO.mapFromEntity(ticketEntity);
     }
 
     public TicketDTO updateTicket(TicketRequest ticketRequest, String ticketId, String token) {
         final var ticketEntity = ticketRepository.findById(ticketId);
-        verifyIfTicketBelongsToUser(ticketId, token);
-        final var fetchedTicket = ticketEntity.get();
-        fetchedTicket.setTitle(ticketRequest.getTitle());
-        fetchedTicket.setPrice(ticketRequest.getPrice());
-        ticketRepository.save(fetchedTicket);
+        if(ticketEntity.isEmpty()) {
+            throw new NotFoundException("Not found ticket with id " + ticketId);
+        }
+        var foundTicket = ticketEntity.get();
+        if (foundTicket.getOrderId() != null) {
+            throw new BadRequestException("Ticket with id " + ticketId + " is already booked");
+        }
+        verifyIfTicketBelongsToUser(foundTicket, token);
+        foundTicket.setTitle(ticketRequest.getTitle());
+        foundTicket.setPrice(ticketRequest.getPrice());
+        ticketRepository.save(foundTicket);
 
-        return TicketDTO.mapFromEntity(fetchedTicket);
+        return TicketDTO.mapFromEntity(foundTicket);
     }
 
     public TicketListResponse generateTicketListResponse(int currentPage, int size) {
@@ -73,19 +79,16 @@ public class TicketServiceImpl {
 
     public TicketDTO findTicketById(String id) {
         Optional<TicketEntity> ticketEntity = ticketRepository.findById(id);
-        if(ticketEntity.isEmpty()) {
-            throw new TicketNotFoundException(id);
+        String errorMessage = "not found ticket with id " + id;
+        if (ticketEntity.isEmpty()) {
+            throw new NotFoundException(errorMessage);
         }
         return TicketDTO.mapFromEntity(ticketEntity.get());
     }
 
-    private void verifyIfTicketBelongsToUser(String ticketId, String token) {
-        Optional<TicketEntity> ticket = ticketRepository.findById(ticketId);
-        if(ticket.isEmpty()) {
-            throw new TicketNotFoundException(ticketId);
-        }
+    private void verifyIfTicketBelongsToUser(TicketEntity ticket, String token) {
         String userIdFromToken = jwtUtils.fetchUserIdFromToken(token);
-        if(ticket.isPresent() && !ticket.get().getUserId().equals(userIdFromToken)) {
+        if(!ticket.getUserId().equals(userIdFromToken)) {
             throw new NotAuthorizedException();
         }
     }

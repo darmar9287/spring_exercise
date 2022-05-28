@@ -1,7 +1,11 @@
 package com.spring.exercise.unittests.service;
 
+import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.model.GetQueueUrlResult;
+import com.spring.exercise.configuration.SQSConnectionConfiguration;
 import com.spring.exercise.controller.model.order.OrderResponse;
-import com.spring.exercise.exceptions.*;
+import com.spring.exercise.exceptions.BadRequestException;
+import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.integrationtests.BaseIntegrationTests;
 import com.spring.exercise.model.OrderEntity;
 import com.spring.exercise.model.TicketEntity;
@@ -36,11 +40,15 @@ public class OrderServiceTests extends BaseIntegrationTests {
     @InjectMocks
     private OrderServiceImpl orderService;
     @Mock
+    private SQSConnectionConfiguration sqsConnectionConfiguration;
+    @Mock
     private OrderRepository orderRepository;
     @Mock
     private TicketRepository ticketRepository;
     @Mock
     private JwtUtils jwtUtils;
+    @Mock
+    private AmazonSQSAsync sqsClient;
 
     private TicketEntity ticket;
     private OrderEntity order;
@@ -75,6 +83,8 @@ public class OrderServiceTests extends BaseIntegrationTests {
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID_2);
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
+        when(sqsConnectionConfiguration.amazonSQSClient()).thenReturn(sqsClient);
+        when(sqsClient.getQueueUrl("order-expiration")).thenReturn(new GetQueueUrlResult());
         //then
         OrderResponse orderResponse = orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN);
         assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
@@ -87,7 +97,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         //when
         when(ticketRepository.findById(any())).thenReturn(Optional.empty());
         //then
-        assertThrows(TicketNotFoundException.class, () -> orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN));
+        assertThrows(NotFoundException.class, () -> orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN));
     }
 
     @Test
@@ -134,7 +144,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
                 });
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
-        when(orderRepository.getTicketOrdersForUser(FAKE_USER_ID)).thenReturn(orders);
+        when(orderRepository.findAllByUserId(FAKE_USER_ID)).thenReturn(orders);
         //then
         int firstOrderIndex = 0;
         List<OrderResponse> userOrders = orderService.getTicketOrdersForUser(FAKE_TOKEN);
@@ -168,7 +178,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
         //then
-        assertThrows(OrderNotFoundException.class, () -> orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_USER_ID));
+        assertThrows(NotFoundException.class, () -> orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_USER_ID));
     }
 
     @Test
@@ -179,7 +189,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
         //then
-        assertThrows(OrderNotFoundException.class, () -> orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_USER_ID));
+        assertThrows(NotFoundException.class, () -> orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_USER_ID));
     }
 
     @Test
@@ -203,7 +213,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.empty());
         //then
-        assertThrows(OrderNotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
+        assertThrows(NotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
     }
 
     @Test
@@ -214,6 +224,6 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
         //then
-        assertThrows(OrderNotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
+        assertThrows(NotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
     }
 }

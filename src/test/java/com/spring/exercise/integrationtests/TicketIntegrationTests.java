@@ -157,6 +157,32 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     }
 
     @Test
+    public void shouldNotUpdateTicketAndResponseWith400WhenTicketIsBooked() throws Exception {
+        MvcResult user = createDefaultUser();
+        String token = fetchToken(user);
+        TicketEntity bookedTicket = TicketEntity.builder()
+                .orderId(ObjectId.get().toString())
+                .price(TICKET_PRICE)
+                .title(TICKET_TITLE)
+                .userId("fake_user_id")
+                .build();
+        ticketRepository.save(bookedTicket);
+        var ticketId = bookedTicket.getId();
+        var ticketPrice = new BigDecimal(45);
+        var expectedErrorMessage = "Ticket with id " + ticketId + " is already booked";
+        mockMvc.perform(MockMvcRequestBuilders
+                        .put("/tickets/update/" + ticketId)
+                        .content(mapToJson(new TicketRequest(bookedTicket.getTitle(), ticketPrice)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(expectedErrorMessage))
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+    }
+
+    @Test
     public void shouldNotUpdateTicketAndResponseWith400WhenPriceIsIncorrect() throws Exception {
         MvcResult user = createDefaultUser();
         String token = fetchToken(user);
@@ -268,9 +294,9 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String userId = ticket.getUserId();
 
         mockMvc.perform(MockMvcRequestBuilders
-                .get("/tickets/show/" + ticketId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                        .get("/tickets/show/" + ticketId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(ticketId))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(title))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(price))

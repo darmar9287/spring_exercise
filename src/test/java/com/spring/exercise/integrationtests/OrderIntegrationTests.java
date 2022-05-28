@@ -109,6 +109,49 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         assertEquals(order.getTicket().getTitle(), ticket.getTitle());
         assertEquals(order.getTicket().getPrice(), ticket.getPrice());
         assertEquals(ticket.getOrderId(), order.getTicket().getOrderId());
+        assertEquals(ticket.getOrderId(), order.getId());
+    }
+
+    @Test
+    public void shouldResponseWith201WhenOrderIsCreatedAndChangeOrderStatusToCancelled() throws Exception {
+        MvcResult ticketOwner = createDefaultUser();
+        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
+        MvcResult user = createCustomUser(authRequestUser);
+        int tokenIndexStart = 7;
+
+        String token = fetchToken(ticketOwner);
+        String tokenValue = token.substring(tokenIndexStart);
+        String ticketOwnerUserId = jwtUtils.extractId(tokenValue);
+        MvcResult result = createTicketForUser(ticketOwnerUserId, token);
+        token = fetchToken(user);
+        JSONObject jsonObj = new JSONObject(result.getResponse().getContentAsString());
+        String ticketId = jsonObj.getString("id");
+        OrderCreateRequest orderCreateRequest = new OrderCreateRequest(ticketId);
+        String expectedOrderStatus = OrderStatus.CREATED.name();
+        result = mockMvc.perform(MockMvcRequestBuilders
+                        .post("/orders")
+                        .content(mapToJson(orderCreateRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.orderStatus").value(expectedOrderStatus))
+                .andExpect(jsonPath("$..ticketId").value(ticketId))
+                .andExpect(jsonPath("$..price").value(TICKET_PRICE.intValue()))
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+        String orderId = new JSONObject(result.getResponse().getContentAsString()).getString("id");
+        OrderEntity order = orderRepository.findById(orderId).get();
+        TicketEntity ticket = ticketRepository.findById(ticketId).get();
+        assertEquals(order.getOrderStatus(), OrderStatus.CREATED);
+        assertEquals(order.getTicket().getId(), ticketId);
+        assertEquals(order.getTicket().getTitle(), ticket.getTitle());
+        assertEquals(order.getTicket().getPrice(), ticket.getPrice());
+        assertEquals(ticket.getOrderId(), order.getTicket().getOrderId());
+        assertEquals(ticket.getOrderId(), order.getId());
+        Thread.sleep(5000);
+        order = orderRepository.findById(orderId).get();
+        assertEquals(order.getOrderStatus(), OrderStatus.CANCELLED);
     }
 
     @Test
@@ -164,6 +207,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         createTicketForUser(ticketOwnerUserId, token);
         token = fetchToken(user);
         String fakeTicketId = "fake_ticket_id";
+        String expectedError = "Ticket with id " + fakeTicketId + " was not found";
 
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(fakeTicketId);
         mockMvc.perform(MockMvcRequestBuilders
@@ -173,7 +217,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.TICKET_NOT_FOUND_ERROR + fakeTicketId))
+                .andExpect(jsonPath("$.errors[0].message").value(expectedError))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -290,7 +334,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
 
-        List<OrderEntity> ordersFromDb = orderRepository.getTicketOrdersForUser(secondUserId);
+        List<OrderEntity> ordersFromDb = orderRepository.findAllByUserId(secondUserId);
         assertEquals(ordersFromDb.size(), orders.size());
     }
 
@@ -603,7 +647,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ticket);
         orderRepository.save(order);
 
-        String expectedError = "Cannot cancel order with id: " + order.getId() + ". Status is COMPLETED/CANCELLED";
+        String expectedError = "Cannot cancel order with id: " + order.getId() + ". Status is " + order.getOrderStatus();
         mockMvc.perform(MockMvcRequestBuilders
                         .delete("/orders/cancel/" + order.getId())
                         .contentType(MediaType.APPLICATION_JSON)

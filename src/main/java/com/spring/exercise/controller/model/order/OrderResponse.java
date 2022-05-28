@@ -25,6 +25,4 @@ public class OrderResponse {
         String ticketId;
         BigDecimal price;
     }
-
-
 }

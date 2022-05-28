@@ -4,7 +4,7 @@ import com.spring.exercise.controller.model.ticket.TicketDTO;
 import com.spring.exercise.controller.model.ticket.TicketListResponse;
 import com.spring.exercise.controller.model.ticket.TicketRequest;
 import com.spring.exercise.exceptions.NotAuthorizedException;
-import com.spring.exercise.exceptions.TicketNotFoundException;
+import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.integrationtests.BaseIntegrationTests;
 import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
@@ -94,7 +94,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
         //when
         when(ticketRepository.findById(any())).thenReturn(Optional.empty());
         //then
-        assertThrows(TicketNotFoundException.class, () -> ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN));
+        assertThrows(NotFoundException.class, () -> ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN));
     }
 
     @Test
@@ -148,6 +148,6 @@ public class TicketServiceTests extends BaseIntegrationTests {
         //when
         when(ticketRepository.findById(fakeTicketId)).thenReturn(Optional.empty());
         //then
-        assertThrows(TicketNotFoundException.class, () -> ticketService.findTicketById(fakeTicketId));
+        assertThrows(NotFoundException.class, () -> ticketService.findTicketById(fakeTicketId));
     }
 }

@@ -1,5 +1,6 @@
 package com.spring.exercise.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.spring.exercise.controller.model.order.OrderCreateRequest;
 import com.spring.exercise.service.OrderServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
@@ -21,7 +22,7 @@ public class OrderController {
     @PostMapping(produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> createTicketOrder(@Valid @RequestBody OrderCreateRequest orderCreateRequest,
                                                Errors errors,
-                                               @RequestHeader(name = "Authorization") String token) {
+                                               @RequestHeader(name = "Authorization") String token) throws JsonProcessingException {
         RequestBodyValidator.check(errors);
         var result = orderService.createTicketOrder(orderCreateRequest.getTicketId(), token);
 
