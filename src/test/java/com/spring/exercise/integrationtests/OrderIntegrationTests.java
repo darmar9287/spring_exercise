@@ -148,10 +148,33 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         assertEquals(order.getTicket().getTitle(), ticket.getTitle());
         assertEquals(order.getTicket().getPrice(), ticket.getPrice());
         assertEquals(ticket.getOrderId(), order.getTicket().getOrderId());
+        assertEquals(ticket.getUserId(), order.getTicket().getUserId());
         assertEquals(ticket.getOrderId(), order.getId());
-        Thread.sleep(5000);
+        long waitForOrderExpiration = 3000;
+        Thread.sleep(waitForOrderExpiration);
         order = orderRepository.findById(orderId).get();
+        ticket = ticketRepository.findById(order.getTicket().getId()).get();
         assertEquals(order.getOrderStatus(), OrderStatus.CANCELLED);
+        assertEquals(ticket.getOrderId(), null);
+
+        result = mockMvc.perform(MockMvcRequestBuilders
+                        .post("/orders")
+                        .content(mapToJson(orderCreateRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.orderStatus").value(expectedOrderStatus))
+                .andExpect(jsonPath("$..ticketId").value(ticketId))
+                .andExpect(jsonPath("$..price").value(TICKET_PRICE.intValue()))
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+        orderId = new JSONObject(result.getResponse().getContentAsString()).getString("id");
+        order = orderRepository.findById(orderId).get();
+        ticket = ticketRepository.findById(order.getTicket().getId()).get();
+        assertEquals(order.getOrderStatus(), OrderStatus.CREATED);
+        assertEquals(ticket.getOrderId(), order.getTicket().getOrderId());
+        assertEquals(ticket.getUserId(), order.getTicket().getUserId());
     }
 
     @Test
@@ -670,7 +693,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 TICKET_TITLE,
                 TICKET_PRICE,
                 userId,
-                ObjectId.get().toString());
+                null);
         ticketRepository.save(ticket);
 
         AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
@@ -686,9 +709,11 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 orderExpirationTime,
                 ticket);
         orderRepository.save(order);
+        ticket.setOrderId(order.getId());
+        ticketRepository.save(ticket);
         Optional<OrderEntity> savedOrder = orderRepository.findById(order.getId());
         assertTrue(savedOrder.isPresent());
-
+        assertEquals(ticket.getOrderId(), order.getId());
         mockMvc.perform(MockMvcRequestBuilders
                         .delete("/orders/cancel/" + order.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -700,7 +725,9 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 .andReturn();
 
         Optional<OrderEntity> emptyOrder = orderRepository.findById(order.getId());
+        ticket = ticketRepository.findById(ticket.getId()).get();
         assertTrue(emptyOrder.isEmpty());
+        assertEquals(ticket.getOrderId(), null);
     }
 
     private String fetchToken(MvcResult resultUser) {

@@ -33,7 +33,7 @@ public class OrderServiceImpl {
     @Value("${order.expiration.in.seconds}")
     private int expirationSeconds;
     @Value("${application.sqs.host}")
-    String destination;
+    private String destination;
     private final OrderRepository orderRepository;
     private final TicketRepository ticketRepository;
     private final SQSConnectionConfiguration queueConfiguration;
@@ -121,16 +121,14 @@ public class OrderServiceImpl {
 
     public void cancelOrder(String token, String orderId) {
         String userId = jwtUtils.fetchUserIdFromToken(token);
-        String errorMessage = null;
+        String errorMessage = "Order with id " + orderId + " was not found";
         Optional<OrderEntity> order = orderRepository.findById(orderId);
         if (order.isEmpty()) {
-            errorMessage = "Order with id " + orderId + " was not found";
             log.warn(errorMessage);
             throw new NotFoundException(errorMessage);
         }
         OrderEntity foundOrder = order.get();
         if (!checkIfUserIsOrderOwner(userId, foundOrder)) {
-            errorMessage = "Order with id " + orderId + " was not found";
             log.warn(errorMessage);
             throw new NotFoundException(errorMessage);
         }
@@ -138,17 +136,23 @@ public class OrderServiceImpl {
             String exceptionMessage = "Cannot cancel order with id: " + orderId + ". Status is " + foundOrder.getOrderStatus();
             throw new BadRequestException(exceptionMessage);
         }
+        TicketEntity ticket = ticketRepository.findById(order.get().getTicket().getId()).get();
+        ticket.setOrderId(null);
         foundOrder.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.delete(foundOrder);
+        ticketRepository.save(ticket);
     }
 
     @SqsListener("order-expiration")
-    public void getMessage(String message) {
-        log.info("Queued orderId: " + message);
-        Optional<OrderEntity> order = orderRepository.findById(message);
+    public void expireOrder(String orderId) {
+        log.info("Order with id: {} has expired. Setting status to CANCELLED", orderId);
+        Optional<OrderEntity> order = orderRepository.findById(orderId);
+        TicketEntity ticket = ticketRepository.findById(order.get().getTicket().getId()).get();
         if (order.isPresent() && order.get().getOrderStatus() == OrderStatus.CREATED) {
             order.get().setOrderStatus(OrderStatus.CANCELLED);
+            ticket.setOrderId(null);
             orderRepository.save(order.get());
+            ticketRepository.save(ticket);
         }
     }
 

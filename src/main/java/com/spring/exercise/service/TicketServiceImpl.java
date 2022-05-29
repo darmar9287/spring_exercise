@@ -11,6 +11,7 @@ import com.spring.exercise.model.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TicketServiceImpl {
 
     private static final int MAX_TICKET_SIZE = 50;
@@ -41,10 +43,12 @@ public class TicketServiceImpl {
     public TicketDTO updateTicket(TicketRequest ticketRequest, String ticketId, String token) {
         final var ticketEntity = ticketRepository.findById(ticketId);
         if(ticketEntity.isEmpty()) {
+            log.warn("Did not find ticket with id " + ticketId);
             throw new NotFoundException("Not found ticket with id " + ticketId);
         }
         var foundTicket = ticketEntity.get();
         if (foundTicket.getOrderId() != null) {
+            log.warn("Ticket with id " + ticketId + " is already booked");
             throw new BadRequestException("Ticket with id " + ticketId + " is already booked");
         }
         verifyIfTicketBelongsToUser(foundTicket, token);
@@ -80,6 +84,7 @@ public class TicketServiceImpl {
         Optional<TicketEntity> ticketEntity = ticketRepository.findById(id);
         String errorMessage = "not found ticket with id " + id;
         if (ticketEntity.isEmpty()) {
+            log.warn(errorMessage);
             throw new NotFoundException(errorMessage);
         }
         return TicketDTO.mapFromEntity(ticketEntity.get());
@@ -88,6 +93,7 @@ public class TicketServiceImpl {
     private void verifyIfTicketBelongsToUser(TicketEntity ticket, String token) {
         String userIdFromToken = jwtUtils.fetchUserIdFromToken(token);
         if(!ticket.getUserId().equals(userIdFromToken)) {
+            log.warn("User is not authorized");
             throw new NotAuthorizedException();
         }
     }
