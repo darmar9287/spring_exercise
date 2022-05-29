@@ -150,7 +150,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         assertEquals(ticket.getOrderId(), order.getTicket().getOrderId());
         assertEquals(ticket.getUserId(), order.getTicket().getUserId());
         assertEquals(ticket.getOrderId(), order.getId());
-        long waitForOrderExpiration = 3000;
+        long waitForOrderExpiration = 5000;
         Thread.sleep(waitForOrderExpiration);
         order = orderRepository.findById(orderId).get();
         ticket = ticketRepository.findById(order.getTicket().getId()).get();

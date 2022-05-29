@@ -1,6 +1,6 @@
 package com.spring.exercise.controller.model.order;
 
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.controller.model.ticket.TicketDTO;
 import com.spring.exercise.utils.OrderStatus;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +16,5 @@ public class OrderDTO {
     private final String userId;
     private final OrderStatus orderStatus;
     private final LocalDateTime expiresAt;
-    private final TicketEntity ticket;
+    private final TicketDTO ticket;
 }

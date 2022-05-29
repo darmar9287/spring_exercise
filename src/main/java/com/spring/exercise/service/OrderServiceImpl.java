@@ -136,7 +136,7 @@ public class OrderServiceImpl {
             String exceptionMessage = "Cannot cancel order with id: " + orderId + ". Status is " + foundOrder.getOrderStatus();
             throw new BadRequestException(exceptionMessage);
         }
-        TicketEntity ticket = ticketRepository.findById(order.get().getTicket().getId()).get();
+        TicketEntity ticket = ticketRepository.findById(foundOrder.getTicket().getId()).get();
         ticket.setOrderId(null);
         foundOrder.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.delete(foundOrder);

@@ -55,6 +55,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
 
     private final static String FAKE_TOKEN = "fake_token";
     private final static String FAKE_TICKET_ID = "fake_ticket_id";
+    private final static String FAKE_ORDER_ID = "fake_order_id";
     private final static String FAKE_USER_ID = "fake_user_id";
     private final static String FAKE_USER_ID_2 = "fake_user_id_2";
     private final static String FAKE_TICKET_TITLE = "fake_title";
@@ -71,7 +72,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
         ticket.setPrice(FAKE_TICKET_PRICE);
         ticket.setUserId(ObjectId.get().toString());
         ticket.setOrderId(null);
-        order = new OrderEntity(FAKE_USER_ID,
+        order = new OrderEntity(FAKE_ORDER_ID,
                 ObjectId.get().toString(),
                 OrderStatus.CREATED,
                 LocalDateTime.now(),
@@ -149,7 +150,6 @@ public class OrderServiceTests extends BaseIntegrationTests {
         int firstOrderIndex = 0;
         List<OrderResponse> userOrders = orderService.getTicketOrdersForUser(FAKE_TOKEN);
         assertEquals(userOrders.size(), orders.size());
-        assertEquals(userOrders.get(firstOrderIndex).getId(), orders.get(firstOrderIndex).getId());
         assertEquals(userOrders.get(firstOrderIndex).getOrderStatus(), orders.get(firstOrderIndex).getOrderStatus());
         assertEquals(userOrders.get(firstOrderIndex).getExpiration(), orders.get(firstOrderIndex).getExpiresAt());
     }
@@ -162,12 +162,11 @@ public class OrderServiceTests extends BaseIntegrationTests {
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
         //then
-        OrderResponse orderResponse = orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_USER_ID);
+        OrderResponse orderResponse = orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_ORDER_ID);
         assertEquals(orderResponse.getId(), order.getId());
         assertEquals(orderResponse.getTicket().getTicketId(), order.getTicket().getId());
         assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
         assertEquals(orderResponse.getExpiration(), order.getExpiresAt());
-
     }
 
     @Test
@@ -196,9 +195,11 @@ public class OrderServiceTests extends BaseIntegrationTests {
     public void testShouldDeleteOrderWhenUserIsOwner() {
         //given
         order.setUserId(FAKE_USER_ID);
+        ticket.setOrderId(order.getId());
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
+        when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
         //then
         orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID);
         verify(orderRepository, times(1)).delete(order);
