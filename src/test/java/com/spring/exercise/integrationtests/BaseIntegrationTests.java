@@ -1,7 +1,7 @@
 package com.spring.exercise.integrationtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spring.exercise.controller.model.AuthRequest;
+import com.spring.exercise.controller.model.user.AuthRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;

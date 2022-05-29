@@ -66,6 +66,7 @@ public class JwtUtils {
     public String extractId(String token) {
         return extractClaim(token, Claims::getId);
     }
+
     public String fetchUserIdFromToken(String token) {
         String parsedJwt = parseJwt(token).get();
         return extractId(parsedJwt);

@@ -1,8 +1,8 @@
 package com.spring.exercise.unittests.service;
 
-import com.spring.exercise.controller.model.TicketDTO;
-import com.spring.exercise.controller.model.TicketListResponse;
-import com.spring.exercise.controller.model.TicketRequest;
+import com.spring.exercise.controller.model.ticket.TicketDTO;
+import com.spring.exercise.controller.model.ticket.TicketListResponse;
+import com.spring.exercise.controller.model.ticket.TicketRequest;
 import com.spring.exercise.exceptions.NotAuthorizedException;
 import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.integrationtests.BaseIntegrationTests;
@@ -44,7 +44,6 @@ public class TicketServiceTests extends BaseIntegrationTests {
     private TicketRequest ticketRequest;
     private TicketEntity ticketEntity;
 
-    private final static long FAKE_TICKET_VERSION = 1;
     private final static String FAKE_TOKEN = "fake_token";
     private final static String FAKE_USER_ID = "fake_user_id";
     private final static String FAKE_TICKET_TITLE = "fake_title";
@@ -114,9 +113,9 @@ public class TicketServiceTests extends BaseIntegrationTests {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0 ; i < 10 ; i++) {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
-                    FAKE_TICKET_VERSION,
                     FAKE_TICKET_TITLE + i,
                     FAKE_TICKET_PRICE,
+                    ObjectId.get().toString(),
                     ObjectId.get().toString()));
         }
         Page<TicketEntity> page = new PageImpl<>(ticketsList);

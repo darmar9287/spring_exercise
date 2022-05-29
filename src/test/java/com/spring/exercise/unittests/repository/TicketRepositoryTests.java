@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 
 @DataMongoTest
 @RunWith(SpringRunner.class)
+@TestPropertySource(locations = "/test.properties")
 public class TicketRepositoryTests {
     @Autowired
     private TicketRepository ticketRepository;
@@ -28,16 +30,15 @@ public class TicketRepositoryTests {
     private TicketEntity ticket;
     private final static String TICKET_TITLE = "fake_title";
     private final static BigDecimal TICKET_PRICE = new BigDecimal(13);
-    private final static String USER_ID = "user_id";
-
 
     @BeforeEach
     public void dataSetup() {
-        ticket = new TicketEntity(ObjectId.get().toString(), 0L, TICKET_TITLE, TICKET_PRICE, USER_ID);
-//        ticket.setId(ObjectId.get().toString());
-//        ticket.setTitle(TICKET_TITLE);
-//        ticket.setPrice(TICKET_PRICE);
-//        ticket.setUserId(USER_ID);
+        ticket = TicketEntity.builder()
+                .id(ObjectId.get().toString())
+                .orderId(ObjectId.get().toString())
+                .userId(ObjectId.get().toString())
+                .price(TICKET_PRICE)
+                .title(TICKET_TITLE).build();
     }
 
     @AfterEach
@@ -62,9 +63,9 @@ public class TicketRepositoryTests {
         List<TicketEntity> ticketsList = new ArrayList<>();
         for (int i = 0 ; i < 10 ; i++) {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
-                    2L,
                     TICKET_TITLE + i,
                     TICKET_PRICE,
+                    ObjectId.get().toString(),
                     ObjectId.get().toString()));
         }
         //when
