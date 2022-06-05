@@ -1,6 +1,6 @@
 package com.spring.exercise.unittests.repository;
 
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.entity.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;

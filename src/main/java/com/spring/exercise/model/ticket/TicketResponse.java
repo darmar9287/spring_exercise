@@ -1,4 +1,4 @@
-package com.spring.exercise.controller.model.ticket;
+package com.spring.exercise.model.ticket;
 
 import lombok.Builder;
 import lombok.Data;

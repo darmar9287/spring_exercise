@@ -1,9 +1,9 @@
 package com.spring.exercise.unittests.service;
 
-import com.spring.exercise.controller.model.user.AuthRequest;
-import com.spring.exercise.controller.model.user.UserDTO;
+import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.entity.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.JwtUtils;

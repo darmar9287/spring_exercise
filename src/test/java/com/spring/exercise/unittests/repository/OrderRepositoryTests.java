@@ -1,7 +1,7 @@
 package com.spring.exercise.unittests.repository;
 
-import com.spring.exercise.model.OrderEntity;
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.entity.OrderEntity;
+import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.utils.OrderStatus;
 import org.bson.types.ObjectId;

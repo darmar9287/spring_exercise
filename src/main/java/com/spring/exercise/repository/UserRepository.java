@@ -1,6 +1,6 @@
 package com.spring.exercise.repository;
 
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.entity.UserEntity;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;

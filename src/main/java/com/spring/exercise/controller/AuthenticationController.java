@@ -1,6 +1,6 @@
 package com.spring.exercise.controller;
 
-import com.spring.exercise.controller.model.user.AuthRequest;
+import com.spring.exercise.model.user.AuthRequest;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.spring.exercise.controller;
 
-import com.spring.exercise.controller.model.ticket.TicketRequest;
+import com.spring.exercise.model.ticket.TicketRequest;
 import com.spring.exercise.service.TicketServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/tickets")
-public class TicketHandlingController {
+public class TicketController {
 
     private final TicketServiceImpl ticketService;
 

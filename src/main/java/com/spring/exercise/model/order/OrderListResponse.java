@@ -1,4 +1,4 @@
-package com.spring.exercise.controller.model.ticket;
+package com.spring.exercise.model.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TicketListResponse {
-    private List<TicketResponse> tickets;
+public class OrderListResponse {
+    private List<OrderResponse> orders;
     private int currentPage;
     private long totalTickets;
     private int totalPages;

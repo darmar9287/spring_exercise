@@ -1,4 +1,4 @@
-package com.spring.exercise.controller.model.order;
+package com.spring.exercise.model.payment;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,9 @@ import javax.validation.constraints.NotBlank;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderCreateRequest {
-        @NotBlank
-        private String ticketId;
+public class PaymentRequest {
+    @NotBlank
+    private String token;
+    @NotBlank
+    private String orderId;
 }

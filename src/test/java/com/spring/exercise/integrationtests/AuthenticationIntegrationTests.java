@@ -1,8 +1,8 @@
 package com.spring.exercise.integrationtests;
 
-import com.spring.exercise.controller.model.user.AuthRequest;
-import com.spring.exercise.controller.model.user.UserDTO;
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.UserDTO;
+import com.spring.exercise.entity.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.AppMessages;
@@ -16,7 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;

@@ -1,9 +1,9 @@
 package com.spring.exercise.integrationtests;
 
 import com.jayway.jsonpath.JsonPath;
-import com.spring.exercise.controller.model.user.AuthRequest;
-import com.spring.exercise.controller.model.ticket.TicketRequest;
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.ticket.TicketRequest;
+import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.utils.AppMessages;
@@ -324,10 +324,6 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                 .andExpect(status().isNotFound())
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
-    }
-
-    private String fetchToken(MvcResult resultUser) {
-        return resultUser.getResponse().getHeader("Authorization");
     }
 
     private MvcResult createTicketForUser(String userId, String token) throws Exception {

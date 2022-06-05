@@ -1,6 +1,6 @@
 package com.spring.exercise.unittests.repository;
 
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;

@@ -1,7 +1,7 @@
 package com.spring.exercise.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.entity.UserEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
