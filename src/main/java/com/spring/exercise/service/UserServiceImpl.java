@@ -1,12 +1,12 @@
 package com.spring.exercise.service;
 
-import com.spring.exercise.controller.model.user.AuthRequest;
-import com.spring.exercise.controller.model.user.AuthResponse;
-import com.spring.exercise.controller.model.user.CurrentUserResponse;
-import com.spring.exercise.controller.model.user.UserDTO;
+import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.AuthResponse;
+import com.spring.exercise.model.user.CurrentUserResponse;
+import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.exceptions.InvalidCredentialsException;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.entity.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.security.UserDetailsImpl;
 import com.spring.exercise.utils.JwtUtils;

@@ -1,4 +1,4 @@
-package com.spring.exercise.model;
+package com.spring.exercise.entity;
 
 import com.spring.exercise.utils.OrderStatus;
 import lombok.*;

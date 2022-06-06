@@ -1,12 +1,12 @@
 package com.spring.exercise.unittests.service;
 
-import com.spring.exercise.controller.model.ticket.TicketDTO;
-import com.spring.exercise.controller.model.ticket.TicketListResponse;
-import com.spring.exercise.controller.model.ticket.TicketRequest;
+import com.spring.exercise.model.ticket.TicketDTO;
+import com.spring.exercise.model.ticket.TicketListResponse;
+import com.spring.exercise.model.ticket.TicketRequest;
 import com.spring.exercise.exceptions.NotAuthorizedException;
 import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.integrationtests.BaseIntegrationTests;
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.service.TicketServiceImpl;
 import com.spring.exercise.utils.JwtUtils;

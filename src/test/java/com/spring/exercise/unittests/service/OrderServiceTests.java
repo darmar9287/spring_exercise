@@ -3,12 +3,13 @@ package com.spring.exercise.unittests.service;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.spring.exercise.configuration.SQSConnectionConfiguration;
-import com.spring.exercise.controller.model.order.OrderResponse;
+import com.spring.exercise.entity.OrderEntity;
+import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.exceptions.BadRequestException;
 import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.integrationtests.BaseIntegrationTests;
-import com.spring.exercise.model.OrderEntity;
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.model.order.OrderListResponse;
+import com.spring.exercise.model.order.OrderResponse;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.service.OrderServiceImpl;
@@ -21,6 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -143,15 +147,20 @@ public class OrderServiceTests extends BaseIntegrationTests {
                             LocalDateTime.now(),
                             tickets.get(x)));
                 });
+        Page<OrderEntity> page = new PageImpl<>(orders);
+        int pageIndex = 0;
+        int pageSize = 5;
         //when
+        PageRequest paging = PageRequest.of(pageIndex, pageSize);
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
-        when(orderRepository.findAllByUserId(FAKE_USER_ID)).thenReturn(orders);
+        when(orderRepository.findAllByUserId(FAKE_USER_ID, paging)).thenReturn(page);
         //then
         int firstOrderIndex = 0;
-        List<OrderResponse> userOrders = orderService.getTicketOrdersForUser(FAKE_TOKEN);
-        assertEquals(userOrders.size(), orders.size());
-        assertEquals(userOrders.get(firstOrderIndex).getOrderStatus(), orders.get(firstOrderIndex).getOrderStatus());
-        assertEquals(userOrders.get(firstOrderIndex).getExpiration(), orders.get(firstOrderIndex).getExpiresAt());
+        OrderListResponse userOrders = orderService.getTicketOrdersForUser(FAKE_TOKEN, pageIndex, pageSize);
+        assertEquals(userOrders.getOrders().size(), orders.size());
+        assertEquals(userOrders.getOrders().get(firstOrderIndex).getOrderStatus(), orders.get(firstOrderIndex).getOrderStatus());
+        assertEquals(userOrders.getOrders().get(firstOrderIndex).getExpiration(), orders.get(firstOrderIndex).getExpiresAt());
+        assertEquals(paging.getPageSize(), 5);
     }
 
     @Test

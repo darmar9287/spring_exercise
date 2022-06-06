@@ -1,10 +1,10 @@
 package com.spring.exercise.integrationtests;
 
-import com.spring.exercise.controller.model.order.OrderCreateRequest;
-import com.spring.exercise.controller.model.ticket.TicketRequest;
-import com.spring.exercise.controller.model.user.AuthRequest;
-import com.spring.exercise.model.OrderEntity;
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.entity.OrderEntity;
+import com.spring.exercise.entity.TicketEntity;
+import com.spring.exercise.model.order.OrderCreateRequest;
+import com.spring.exercise.model.ticket.TicketRequest;
+import com.spring.exercise.model.user.AuthRequest;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
@@ -20,6 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -27,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -83,7 +86,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
         String ticketOwnerUserId = jwtUtils.extractId(tokenValue);
-        MvcResult result = createTicketForUser(ticketOwnerUserId, token);
+        MvcResult result = createTicketForUser(ticketOwnerUserId, token, ticketRequest);
         token = fetchToken(user);
         JSONObject jsonObj = new JSONObject(result.getResponse().getContentAsString());
         String ticketId = jsonObj.getString("id");
@@ -122,7 +125,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
         String ticketOwnerUserId = jwtUtils.extractId(tokenValue);
-        MvcResult result = createTicketForUser(ticketOwnerUserId, token);
+        MvcResult result = createTicketForUser(ticketOwnerUserId, token, ticketRequest);
         token = fetchToken(user);
         JSONObject jsonObj = new JSONObject(result.getResponse().getContentAsString());
         String ticketId = jsonObj.getString("id");
@@ -150,7 +153,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         assertEquals(ticket.getOrderId(), order.getTicket().getOrderId());
         assertEquals(ticket.getUserId(), order.getTicket().getUserId());
         assertEquals(ticket.getOrderId(), order.getId());
-        long waitForOrderExpiration = 5000;
+        long waitForOrderExpiration = 20000;
         Thread.sleep(waitForOrderExpiration);
         order = orderRepository.findById(orderId).get();
         ticket = ticketRepository.findById(order.getTicket().getId()).get();
@@ -202,7 +205,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
         String ticketOwnerUserId = jwtUtils.extractId(tokenValue);
-        createTicketForUser(ticketOwnerUserId, token);
+        createTicketForUser(ticketOwnerUserId, token, ticketRequest);
         token = fetchToken(user);
 
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest("");
@@ -227,7 +230,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
         String ticketOwnerUserId = jwtUtils.extractId(tokenValue);
-        createTicketForUser(ticketOwnerUserId, token);
+        createTicketForUser(ticketOwnerUserId, token, ticketRequest);
         token = fetchToken(user);
         String fakeTicketId = "fake_ticket_id";
         String expectedError = "Ticket with id " + fakeTicketId + " was not found";
@@ -257,7 +260,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
         String ticketOwnerUserId = jwtUtils.extractId(tokenValue);
-        MvcResult ticketCreateResult = createTicketForUser(ticketOwnerUserId, token);
+        MvcResult ticketCreateResult = createTicketForUser(ticketOwnerUserId, token, ticketRequest);
         JSONObject jsonObj = new JSONObject(ticketCreateResult.getResponse().getContentAsString());
         String ticketId = jsonObj.getString("id");
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(ticketId);
@@ -293,7 +296,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
         String ticketOwnerUserId = jwtUtils.extractId(tokenValue);
-        MvcResult ticketCreateResult = createTicketForUser(ticketOwnerUserId, token);
+        MvcResult ticketCreateResult = createTicketForUser(ticketOwnerUserId, token, ticketRequest);
         JSONObject jsonObj = new JSONObject(ticketCreateResult.getResponse().getContentAsString());
         String ticketId = jsonObj.getString("id");
         OrderCreateRequest orderCreateRequest = new OrderCreateRequest(ticketId);
@@ -312,53 +315,55 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldResponseWith200WhenUserRequestHisOrders() throws Exception {
-        MvcResult user = createDefaultUser();
-        int tokenIndexStart = 7;
-        String token = fetchToken(user);
-        String tokenValue = token.substring(tokenIndexStart);
-        String userId = jwtUtils.extractId(tokenValue);
         List<TicketEntity> ticketsList = new ArrayList<>();
         IntStream.range(0, 10)
                 .forEach(x -> {
                     ticketsList.add(new TicketEntity(ObjectId.get().toString(),
                             TICKET_TITLE,
                             TICKET_PRICE,
-                            userId,
+                            ObjectId.get().toString(),
                             ObjectId.get().toString()));
                 });
         ticketRepository.saveAll(ticketsList);
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
-        token = fetchToken(firstUser);
-        JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
-        String secondUserId = json.getString("id");
-        List<OrderEntity> orders = new ArrayList<>();
-        long expirationSecond = 900;
-        IntStream.range(0, 10)
+        MvcResult orderOwner = createDefaultUser();
+        int tokenIndexStart = 7;
+        String token = fetchToken(orderOwner);
+        String tokenValue = token.substring(tokenIndexStart);
+        String userId = jwtUtils.extractId(tokenValue);
+        List<OrderEntity> ordersList = new ArrayList<>();
+        int start = 0;
+        int end = 10;
+        IntStream.range(start, end)
                 .forEach(x -> {
-                    orders.add(new OrderEntity(ObjectId.get().toString(),
-                            secondUserId,
+                    ordersList.add(new OrderEntity(ObjectId.get().toString(),
+                            userId,
                             OrderStatus.CREATED,
-                            LocalDateTime.now().plusSeconds(expirationSecond),
+                            LocalDateTime.now(),
                             ticketsList.get(x)));
                 });
-        orderRepository.saveAll(orders);
+        orderRepository.saveAll(ordersList);
 
+        int currentPage = 0;
+        int ordersPerPage = 5;
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .get("/orders/")
                         .header("Authorization", token)
+                        .requestAttr("page", currentPage)
+                        .requestAttr("size", ordersPerPage)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.orders", hasSize(ordersPerPage)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage").value(currentPage))
+                .andExpect(jsonPath("$..id", hasSize(ordersPerPage)))
+                .andExpect(jsonPath("$..orderStatus", hasSize(ordersPerPage)))
+                .andExpect(jsonPath("$..expiration", hasSize(ordersPerPage)))
+                .andExpect(jsonPath("$..ticket", hasSize(ordersPerPage)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$..id", hasSize(10)))
-                .andExpect(jsonPath("$..orderStatus", hasSize(10)))
-                .andExpect(jsonPath("$..expiration", hasSize(10)))
-                .andExpect(jsonPath("$..ticket", hasSize(10)))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
-
-        List<OrderEntity> ordersFromDb = orderRepository.findAllByUserId(secondUserId);
-        assertEquals(ordersFromDb.size(), orders.size());
+        Pageable paging = PageRequest.of(currentPage, ordersPerPage);
+        List<OrderEntity> ordersFromDb = orderRepository.findAllByUserId(userId, paging).toList();
+        assertEquals(ordersFromDb.size(), ordersPerPage);
     }
 
     @Test
@@ -728,41 +733,5 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         ticket = ticketRepository.findById(ticket.getId()).get();
         assertTrue(emptyOrder.isEmpty());
         assertEquals(ticket.getOrderId(), null);
-    }
-
-    private String fetchToken(MvcResult resultUser) {
-        return resultUser.getResponse().getHeader("Authorization");
-    }
-
-    private MvcResult createTicketForUser(String userId, String token) throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders
-                        .post("/tickets/create")
-                        .content(mapToJson(ticketRequest))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", token)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.title").value(ticketRequest.getTitle()))
-                .andExpect(jsonPath("$.price").value(ticketRequest.getPrice()))
-                .andExpect(jsonPath("$.userId").value(userId))
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn();
-    }
-
-    private MvcResult createCustomTicketForUser(TicketRequest ticketRequest, String userId, String token) throws Exception {
-        return mockMvc.perform(MockMvcRequestBuilders
-                        .post("/tickets/create")
-                        .content(mapToJson(ticketRequest))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", token)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.title").value(ticketRequest.getTitle()))
-                .andExpect(jsonPath("$.price").value(ticketRequest.getPrice()))
-                .andExpect(jsonPath("$.userId").value(userId))
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn();
     }
 }

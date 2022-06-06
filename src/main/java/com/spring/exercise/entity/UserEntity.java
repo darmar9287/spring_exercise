@@ -1,9 +1,7 @@
-package com.spring.exercise.model;
+package com.spring.exercise.entity;
 
-import com.spring.exercise.utils.AppMessages;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 

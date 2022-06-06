@@ -1,4 +1,4 @@
-package com.spring.exercise.controller.model.user;
+package com.spring.exercise.model.user;
 
 import com.spring.exercise.utils.AppMessages;
 import lombok.AllArgsConstructor;

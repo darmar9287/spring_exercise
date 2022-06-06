@@ -1,4 +1,4 @@
-package com.spring.exercise.controller.model.order;
+package com.spring.exercise.model.order;
 
 import com.spring.exercise.utils.OrderStatus;
 import lombok.AllArgsConstructor;

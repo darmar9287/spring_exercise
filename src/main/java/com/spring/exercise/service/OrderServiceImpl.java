@@ -3,11 +3,12 @@ package com.spring.exercise.service;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.spring.exercise.configuration.SQSConnectionConfiguration;
-import com.spring.exercise.controller.model.order.OrderResponse;
+import com.spring.exercise.entity.OrderEntity;
+import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.exceptions.BadRequestException;
 import com.spring.exercise.exceptions.NotFoundException;
-import com.spring.exercise.model.OrderEntity;
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.model.order.OrderListResponse;
+import com.spring.exercise.model.order.OrderResponse;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.utils.AppMessages;
@@ -17,6 +18,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,14 +33,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderServiceImpl {
-
     @Value("${order.expiration.in.seconds}")
     private int expirationSeconds;
-    @Value("${application.sqs.host}")
-    private String destination;
     private final OrderRepository orderRepository;
     private final TicketRepository ticketRepository;
     private final SQSConnectionConfiguration queueConfiguration;
+    private static final int MAX_ORDERS_SIZE = 50;
 
     private final JwtUtils jwtUtils;
 
@@ -85,16 +87,23 @@ public class OrderServiceImpl {
                 .expiration(expiresAt).build();
     }
 
-    public List<OrderResponse> getTicketOrdersForUser(String token) {
+    public OrderListResponse getTicketOrdersForUser(String token, int currentPage, int size) {
+        Pageable paging = size > MAX_ORDERS_SIZE ? PageRequest.of(currentPage, MAX_ORDERS_SIZE) : PageRequest.of(currentPage, size);
+
         String userId = jwtUtils.fetchUserIdFromToken(token);
-        List<OrderEntity> orders = orderRepository.findAllByUserId(userId);
-        return orders.stream()
-                .map(o -> OrderResponse.builder()
-                        .orderStatus(o.getOrderStatus())
-                        .expiration(o.getExpiresAt())
-                        .ticket(new OrderResponse.TicketOrderResponse(o.getTicket().getTitle(), o.getTicket().getPrice()))
-                        .build())
-                .collect(Collectors.toList());
+        Page<OrderEntity> pageOrders = orderRepository.findAllByUserId(userId, paging);
+        List<OrderResponse> orders = pageOrders.getContent().stream().map(order -> OrderResponse.builder()
+                .id(order.getId())
+                .orderStatus(order.getOrderStatus())
+                .expiration(order.getExpiresAt())
+                .ticket(new OrderResponse.TicketOrderResponse(order.getTicket().getId(),
+                        order.getTicket().getPrice()))
+                .build()).collect(Collectors.toList());
+
+        return OrderListResponse.builder()
+                .orders(orders)
+                .currentPage(currentPage)
+                .totalPages(pageOrders.getTotalPages()).build();
     }
 
     public OrderResponse getTicketOrderForUser(String token, String orderId) {

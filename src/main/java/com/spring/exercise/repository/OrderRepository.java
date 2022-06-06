@@ -1,10 +1,10 @@
 package com.spring.exercise.repository;
 
-import com.spring.exercise.model.OrderEntity;
+import com.spring.exercise.entity.OrderEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.List;
-
 public interface OrderRepository extends MongoRepository<OrderEntity, String> {
-    List<OrderEntity> findAllByUserId(String userId);
+    Page<OrderEntity> findAllByUserId(String userId, Pageable pageable);
 }

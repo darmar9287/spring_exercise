@@ -1,6 +1,6 @@
-package com.spring.exercise.controller.model.user;
+package com.spring.exercise.model.user;
 
-import com.spring.exercise.model.UserEntity;
+import com.spring.exercise.entity.UserEntity;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 

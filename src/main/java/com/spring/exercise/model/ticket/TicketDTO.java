@@ -1,6 +1,6 @@
-package com.spring.exercise.controller.model.ticket;
+package com.spring.exercise.model.ticket;
 
-import com.spring.exercise.model.TicketEntity;
+import com.spring.exercise.entity.TicketEntity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 @Builder
 public class TicketDTO {
-
     private final String id;
     private final String title;
     private final BigDecimal price;
