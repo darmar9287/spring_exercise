@@ -261,6 +261,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
         foundOrder.setOrderStatus(OrderStatus.COMPLETED);
         orderRepository.save(foundOrder);
 
+        String expectedErrorMessage = "Order with id: " + orderId + " is " + foundOrder.getOrderStatus().name();
         paymentRequest = new PaymentRequest(STRIPE_TOKEN, orderId);
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/payments/create")
@@ -269,6 +270,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].message").value(expectedErrorMessage))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
         expectedOrderStatus = OrderStatus.COMPLETED.name();
@@ -300,6 +302,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
         foundOrder.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(foundOrder);
 
+        String expectedErrorMessage = "Order with id: " + orderId + " is " + foundOrder.getOrderStatus().name();
         paymentRequest = new PaymentRequest(STRIPE_TOKEN, orderId);
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/payments/create")
@@ -308,6 +311,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].message").value(expectedErrorMessage))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
         expectedOrderStatus = OrderStatus.CANCELLED.name();

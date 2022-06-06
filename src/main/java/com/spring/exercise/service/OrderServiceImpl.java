@@ -38,6 +38,7 @@ public class OrderServiceImpl {
     private final OrderRepository orderRepository;
     private final TicketRepository ticketRepository;
     private final SQSConnectionConfiguration queueConfiguration;
+    private static final int MAX_ORDERS_SIZE = 50;
 
     private final JwtUtils jwtUtils;
 
@@ -87,7 +88,13 @@ public class OrderServiceImpl {
     }
 
     public OrderListResponse getTicketOrdersForUser(String token, int currentPage, int size) {
-        Pageable paging = PageRequest.of(currentPage, size);
+        Pageable paging;
+        if(size > MAX_ORDERS_SIZE) {
+            paging = PageRequest.of(currentPage, MAX_ORDERS_SIZE);
+        } else {
+            paging = PageRequest.of(currentPage, size);
+        }
+
         String userId = jwtUtils.fetchUserIdFromToken(token);
         Page<OrderEntity> pageOrders = orderRepository.findAllByUserId(userId, paging);
         List<OrderResponse> orders = pageOrders.getContent().stream().map(order -> OrderResponse.builder()
