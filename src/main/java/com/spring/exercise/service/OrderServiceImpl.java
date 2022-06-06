@@ -88,12 +88,7 @@ public class OrderServiceImpl {
     }
 
     public OrderListResponse getTicketOrdersForUser(String token, int currentPage, int size) {
-        Pageable paging;
-        if(size > MAX_ORDERS_SIZE) {
-            paging = PageRequest.of(currentPage, MAX_ORDERS_SIZE);
-        } else {
-            paging = PageRequest.of(currentPage, size);
-        }
+        Pageable paging = size > MAX_ORDERS_SIZE ? PageRequest.of(currentPage, MAX_ORDERS_SIZE) : PageRequest.of(currentPage, size);
 
         String userId = jwtUtils.fetchUserIdFromToken(token);
         Page<OrderEntity> pageOrders = orderRepository.findAllByUserId(userId, paging);
