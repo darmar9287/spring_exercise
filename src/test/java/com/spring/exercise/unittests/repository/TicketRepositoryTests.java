@@ -29,6 +29,7 @@ public class TicketRepositoryTests {
 
     private TicketEntity ticket;
     private final static String TICKET_TITLE = "fake_title";
+    private final static String TICKET_DESCRIPTION = "fake_description_";
     private final static BigDecimal TICKET_PRICE = new BigDecimal(13);
 
     @BeforeEach
@@ -37,6 +38,7 @@ public class TicketRepositoryTests {
                 .id(ObjectId.get().toString())
                 .orderId(ObjectId.get().toString())
                 .userId(ObjectId.get().toString())
+                .description(TICKET_DESCRIPTION)
                 .price(TICKET_PRICE)
                 .title(TICKET_TITLE).build();
     }
@@ -55,6 +57,7 @@ public class TicketRepositoryTests {
         assertEquals(savedTicket.getTitle(), fetchedTicket.getTitle());
         assertEquals(savedTicket.getPrice(), fetchedTicket.getPrice());
         assertEquals(savedTicket.getUserId(), fetchedTicket.getUserId());
+        assertEquals(savedTicket.getDescription(), fetchedTicket.getDescription());
     }
 
     @Test
@@ -65,6 +68,7 @@ public class TicketRepositoryTests {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
                     TICKET_TITLE + i,
                     TICKET_PRICE,
+                    TICKET_DESCRIPTION + i,
                     ObjectId.get().toString(),
                     ObjectId.get().toString()));
         }

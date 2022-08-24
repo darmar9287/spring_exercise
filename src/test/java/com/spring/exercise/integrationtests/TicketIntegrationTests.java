@@ -6,7 +6,7 @@ import com.spring.exercise.model.ticket.TicketRequest;
 import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
-import com.spring.exercise.utils.AppMessages;
+import com.spring.exercise.utils.ErrorAppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
@@ -51,10 +51,11 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     private TicketRequest ticketRequest;
     private static final String TICKET_TITLE = "ticket_title";
     private static final BigDecimal TICKET_PRICE = new BigDecimal(13);
+    private final static String TICKET_DESCRIPTION = "ticket_description_";
 
     @BeforeEach
     public void setUp() {
-        ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE);
+        ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
         authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
     }
 
@@ -78,6 +79,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = ticketRepository.findById(ticketId).get();
         assertEquals(ticketRequest.getTitle(), ticket.getTitle());
         assertEquals(ticketRequest.getPrice(), ticket.getPrice());
+        assertEquals(ticketRequest.getDescription(), ticket.getDescription());
         assertEquals(userId, ticket.getUserId());
     }
 
@@ -91,7 +93,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", fakeToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -100,7 +102,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     public void shouldResponseWith400WhenTitleIsBlank() throws Exception {
         MvcResult user = createDefaultUser();
         String token = fetchToken(user);
-        TicketRequest incorrectTicketRequest = new TicketRequest("", new BigDecimal(13));
+        TicketRequest incorrectTicketRequest = new TicketRequest("", new BigDecimal(13), TICKET_DESCRIPTION);
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/tickets/create")
                         .content(mapToJson(incorrectTicketRequest))
@@ -108,7 +110,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -117,7 +119,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     public void shouldNotCreateTicketAndResponseWith400WhenPriceIsIncorrect() throws Exception {
         MvcResult user = createDefaultUser();
         String token = fetchToken(user);
-        TicketRequest incorrectTicketRequest = new TicketRequest("title", new BigDecimal(0));
+        TicketRequest incorrectTicketRequest = new TicketRequest("title", new BigDecimal(0), TICKET_DESCRIPTION);
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/tickets/create")
                         .content(mapToJson(incorrectTicketRequest))
@@ -125,7 +127,24 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_PRICE_TOO_LOW_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_PRICE_TOO_LOW_ERROR))
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+    }
+
+    @Test
+    public void shouldNotCreateTicketAndResponseWith400WhenDescriptionIsBlank() throws Exception {
+        MvcResult user = createDefaultUser();
+        String token = fetchToken(user);
+        TicketRequest incorrectTicketRequest = new TicketRequest(TICKET_TITLE, new BigDecimal(2), "");
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/tickets/create")
+                        .content(mapToJson(incorrectTicketRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", token)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -143,7 +162,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         var ticketPrice = new BigDecimal(45);
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/tickets/update/" + ticketId)
-                        .content(mapToJson(new TicketRequest(ticketTitle, ticketPrice)))
+                        .content(mapToJson(new TicketRequest(ticketTitle, ticketPrice, TICKET_DESCRIPTION)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -162,6 +181,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String token = fetchToken(user);
         TicketEntity bookedTicket = TicketEntity.builder()
                 .orderId(ObjectId.get().toString())
+                .description(TICKET_DESCRIPTION)
                 .price(TICKET_PRICE)
                 .title(TICKET_TITLE)
                 .userId("fake_user_id")
@@ -172,7 +192,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         var expectedErrorMessage = "Ticket with id " + ticketId + " is already booked";
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/tickets/update/" + ticketId)
-                        .content(mapToJson(new TicketRequest(bookedTicket.getTitle(), ticketPrice)))
+                        .content(mapToJson(new TicketRequest(bookedTicket.getTitle(), ticketPrice, TICKET_DESCRIPTION)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -191,7 +211,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String userId = jwtUtils.extractId(tokenValue);
         String ticketCreateResponse = createTicketForUser(userId, token).getResponse().getContentAsString();
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
-        TicketRequest incorrectTicketRequest = new TicketRequest(TICKET_TITLE, new BigDecimal(0));
+        TicketRequest incorrectTicketRequest = new TicketRequest(TICKET_TITLE, new BigDecimal(0), TICKET_DESCRIPTION);
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/tickets/update/" + ticketId)
                         .content(mapToJson(incorrectTicketRequest))
@@ -199,7 +219,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_PRICE_TOO_LOW_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_PRICE_TOO_LOW_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -213,7 +233,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String userId = jwtUtils.extractId(tokenValue);
         String ticketCreateResponse = createTicketForUser(userId, token).getResponse().getContentAsString();
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
-        TicketRequest incorrectTicketRequest = new TicketRequest("", new BigDecimal(12));
+        TicketRequest incorrectTicketRequest = new TicketRequest("", new BigDecimal(12), TICKET_DESCRIPTION);
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/tickets/update/" + ticketId)
                         .content(mapToJson(incorrectTicketRequest))
@@ -221,7 +241,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -239,7 +259,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
 
         String ticketCreateResponse = createTicketForUser(userId, token).getResponse().getContentAsString();
         String ticketId = JsonPath.parse(ticketCreateResponse).read("$.id");
-        TicketRequest incorrectTicketRequest = new TicketRequest("fake_title", new BigDecimal(12));
+        TicketRequest incorrectTicketRequest = new TicketRequest("fake_title", new BigDecimal(12), TICKET_DESCRIPTION);
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/tickets/update/" + ticketId)
                         .content(mapToJson(incorrectTicketRequest))
@@ -247,7 +267,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", fakeUserToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -259,6 +279,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
                     TICKET_TITLE,
                     TICKET_PRICE,
+                    TICKET_DESCRIPTION + i,
                     ObjectId.get().toString(),
                     ObjectId.get().toString()));
         }
@@ -285,6 +306,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 ObjectId.get().toString(),
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -312,6 +334,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                 TICKET_TITLE,
                 TICKET_PRICE,
                 ObjectId.get().toString(),
+                TICKET_DESCRIPTION,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
         String wrongTicketId = "wrong_ticket_id";
@@ -320,7 +343,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .get("/tickets/show/" + wrongTicketId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_NOT_FOUND_ERROR + wrongTicketId))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_NOT_FOUND_ERROR + wrongTicketId))
                 .andExpect(status().isNotFound())
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
@@ -337,6 +360,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(ticketRequest.getTitle()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(ticketRequest.getPrice()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(ticketRequest.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.userId").value(userId))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();

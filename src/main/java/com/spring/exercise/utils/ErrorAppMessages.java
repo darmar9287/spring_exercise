@@ -1,6 +1,6 @@
 package com.spring.exercise.utils;
 
-public class AppMessages {
+public class ErrorAppMessages {
     public static final String EMAIL_EXISTS_ERROR = "email in use";
 
     public static final String PASSWORD_SIZE_ERROR = "size must be between 4 and 20";

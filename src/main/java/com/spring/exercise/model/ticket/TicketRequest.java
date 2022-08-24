@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 @Data
@@ -16,4 +17,7 @@ public class TicketRequest {
     private String title;
     @DecimalMin(value = "0.5", inclusive = true)
     private BigDecimal price;
+    @NotBlank
+    @Size(max = 500)
+    private String description;
 }

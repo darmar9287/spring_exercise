@@ -16,11 +16,13 @@ public class TicketDTO {
     private final BigDecimal price;
     private final String userId;
     private final String orderId;
+    private final String description;
 
     public static TicketDTO mapFromEntity(TicketEntity ticketEntity) {
         return new TicketDTOBuilder().id(ticketEntity.getId())
                 .title(ticketEntity.getTitle())
                 .price(ticketEntity.getPrice())
+                .description(ticketEntity.getDescription())
                 .userId(ticketEntity.getUserId())
                 .orderId(ticketEntity.getOrderId())
                 .build();

@@ -23,6 +23,7 @@ public class BaseIntegrationTests {
     protected AuthRequest authRequest;
     protected final static String USER_NAME = "marek_test@gmail.com";
     protected final static String USER_PASSWORD = "pass";
+    protected final static String TICKET_DESCRIPTION = "fake_description_";
 
     protected String fetchToken(MvcResult resultUser) {
         return resultUser.getResponse().getHeader("Authorization");

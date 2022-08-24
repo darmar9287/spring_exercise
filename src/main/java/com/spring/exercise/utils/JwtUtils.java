@@ -1,13 +1,14 @@
 package com.spring.exercise.utils;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.Function;
@@ -16,10 +17,7 @@ import java.util.function.Function;
 public class JwtUtils {
 
     private String secretKey;
-    public String sub;
-    public String jti;
     private static final int BEARER_SUBSTRING_LENGTH = 7;
-
 
     public JwtUtils(@Value("${jwt.secret}") String secretKey) {
         this.secretKey = secretKey;

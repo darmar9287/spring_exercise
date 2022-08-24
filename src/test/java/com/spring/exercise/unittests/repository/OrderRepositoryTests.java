@@ -32,6 +32,7 @@ public class OrderRepositoryTests {
 
     private final static String TICKET_TITLE = "fake_title";
     private final static BigDecimal TICKET_PRICE = new BigDecimal(13);
+    private final static String TICKET_DESCRIPTION = "fake_description_";
     private final static String USER_ID = "1";
     private final static TicketEntity ticket = new TicketEntity();
 
@@ -50,6 +51,7 @@ public class OrderRepositoryTests {
                     tickets.add(new TicketEntity(ObjectId.get().toString(),
                             TICKET_TITLE,
                             TICKET_PRICE,
+                            TICKET_DESCRIPTION + x,
                             USER_ID,
                             ObjectId.get().toString()));
                 });

@@ -11,7 +11,7 @@ import com.spring.exercise.model.order.OrderListResponse;
 import com.spring.exercise.model.order.OrderResponse;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.TicketRepository;
-import com.spring.exercise.utils.AppMessages;
+import com.spring.exercise.utils.ErrorAppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
 import lombok.RequiredArgsConstructor;
@@ -53,12 +53,12 @@ public class OrderServiceImpl {
         TicketEntity foundTicket = optionalTicket.get();
         if (checkIfTicketIsAlreadyBooked(foundTicket)) {
             log.warn("Ticket with id %s is already booked", ticketId);
-            throw new BadRequestException(AppMessages.TICKET_ALREADY_BOOKED_ERROR);
+            throw new BadRequestException(ErrorAppMessages.TICKET_ALREADY_BOOKED_ERROR);
         }
         String userId = jwtUtils.fetchUserIdFromToken(token);
         if (checkIfUserIsTicketOwner(userId, foundTicket)) {
             log.warn("User tried to book his own ticket");
-            throw new BadRequestException(AppMessages.OWN_TICKET_PURCHASE_ERROR);
+            throw new BadRequestException(ErrorAppMessages.OWN_TICKET_PURCHASE_ERROR);
         }
 
         LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(expirationSeconds);
