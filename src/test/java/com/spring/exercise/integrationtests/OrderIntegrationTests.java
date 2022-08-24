@@ -8,7 +8,7 @@ import com.spring.exercise.model.user.AuthRequest;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
-import com.spring.exercise.utils.AppMessages;
+import com.spring.exercise.utils.ErrorAppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
 import org.bson.types.ObjectId;
@@ -63,10 +63,11 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     private TicketRequest ticketRequest;
     private static final String TICKET_TITLE = "ticket_title";
     private static final BigDecimal TICKET_PRICE = new BigDecimal(13);
+    private final static String TICKET_DESCRIPTION = "ticket_description_";
 
     @BeforeEach
     public void setUp() {
-        ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE);
+        ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
         authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
     }
 
@@ -191,7 +192,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -216,7 +217,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -284,7 +285,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.TICKET_ALREADY_BOOKED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_ALREADY_BOOKED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -308,7 +309,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.OWN_TICKET_PURCHASE_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.OWN_TICKET_PURCHASE_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -321,6 +322,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                     ticketsList.add(new TicketEntity(ObjectId.get().toString(),
                             TICKET_TITLE,
                             TICKET_PRICE,
+                            TICKET_DESCRIPTION + x,
                             ObjectId.get().toString(),
                             ObjectId.get().toString()));
                 });
@@ -376,6 +378,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -417,6 +420,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -441,7 +445,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -456,6 +460,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -497,6 +502,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -537,6 +543,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -577,6 +584,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -618,6 +626,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -642,7 +651,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -657,6 +666,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
@@ -697,6 +707,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
         TicketEntity ticket = new TicketEntity(ObjectId.get().toString(),
                 TICKET_TITLE,
                 TICKET_PRICE,
+                TICKET_DESCRIPTION,
                 userId,
                 null);
         ticketRepository.save(ticket);

@@ -35,6 +35,7 @@ public class TicketServiceImpl {
         final var ticketEntity = new TicketEntity();
         ticketEntity.setTitle(ticketRequest.getTitle());
         ticketEntity.setPrice(ticketRequest.getPrice());
+        ticketEntity.setDescription(ticketRequest.getDescription());
         ticketEntity.setUserId(userId);
         ticketRepository.save(ticketEntity);
         return TicketDTO.mapFromEntity(ticketEntity);

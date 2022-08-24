@@ -5,7 +5,7 @@ import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.entity.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
-import com.spring.exercise.utils.AppMessages;
+import com.spring.exercise.utils.ErrorAppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +83,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_EXISTS_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.EMAIL_EXISTS_ERROR));
     }
 
     @Test
@@ -99,7 +99,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_FORMAT_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.EMAIL_FORMAT_ERROR));
     }
 
     @Test
@@ -115,7 +115,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.PASSWORD_SIZE_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.PASSWORD_SIZE_ERROR));
     }
 
     @Test
@@ -145,7 +145,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.INCORRECT_CREDENTIALS_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.INCORRECT_CREDENTIALS_ERROR));
     }
 
     @Test
@@ -159,7 +159,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_FORMAT_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.EMAIL_FORMAT_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -174,7 +174,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.PASSWORD_SIZE_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.PASSWORD_SIZE_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -212,6 +212,6 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR));
     }
 }

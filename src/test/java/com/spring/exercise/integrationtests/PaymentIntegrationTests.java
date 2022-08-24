@@ -10,7 +10,7 @@ import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.PaymentRepository;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
-import com.spring.exercise.utils.AppMessages;
+import com.spring.exercise.utils.ErrorAppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
 import org.bson.types.ObjectId;
@@ -58,11 +58,12 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     private TicketRequest ticketRequest;
     private static final String TICKET_TITLE = "ticket_title";
     private static final BigDecimal TICKET_PRICE = new BigDecimal(13);
+    private final static String TICKET_DESCRIPTION = "ticket_description_";
     private static final String STRIPE_TOKEN = "tok_visa";
 
     @BeforeEach
     public void setUp() {
-        ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE);
+        ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
         authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
     }
 
@@ -128,7 +129,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(paymentRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -167,7 +168,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(paymentRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -185,7 +186,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(paymentRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }

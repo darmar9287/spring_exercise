@@ -59,6 +59,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
 
     private final static String FAKE_TOKEN = "fake_token";
     private final static String FAKE_TICKET_ID = "fake_ticket_id";
+    private final static String TICKET_DESCRIPTION = "fake_description_";
     private final static String FAKE_ORDER_ID = "fake_order_id";
     private final static String FAKE_USER_ID = "fake_user_id";
     private final static String FAKE_USER_ID_2 = "fake_user_id_2";
@@ -136,6 +137,7 @@ public class OrderServiceTests extends BaseIntegrationTests {
                     tickets.add(new TicketEntity(ObjectId.get().toString(),
                             FAKE_TICKET_TITLE,
                             FAKE_TICKET_PRICE,
+                            TICKET_DESCRIPTION + x,
                             FAKE_USER_ID_2,
                             ObjectId.get().toString()));
                 });

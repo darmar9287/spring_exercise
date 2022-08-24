@@ -1,12 +1,12 @@
 package com.spring.exercise.unittests.service;
 
-import com.spring.exercise.model.ticket.TicketDTO;
-import com.spring.exercise.model.ticket.TicketListResponse;
-import com.spring.exercise.model.ticket.TicketRequest;
+import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.exceptions.NotAuthorizedException;
 import com.spring.exercise.exceptions.NotFoundException;
 import com.spring.exercise.integrationtests.BaseIntegrationTests;
-import com.spring.exercise.entity.TicketEntity;
+import com.spring.exercise.model.ticket.TicketDTO;
+import com.spring.exercise.model.ticket.TicketListResponse;
+import com.spring.exercise.model.ticket.TicketRequest;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.service.TicketServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
@@ -48,6 +48,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
     private final static String FAKE_USER_ID = "fake_user_id";
     private final static String FAKE_TICKET_TITLE = "fake_title";
     private final static BigDecimal FAKE_TICKET_PRICE = new BigDecimal(12);
+    private final static String FAKE_TICKET_DESCRIPTION = "fake_ticket_description_";
 
     public TicketServiceTests() {
     }
@@ -57,10 +58,12 @@ public class TicketServiceTests extends BaseIntegrationTests {
         ticketRequest = new TicketRequest();
         ticketRequest.setTitle(FAKE_TICKET_TITLE);
         ticketRequest.setPrice(FAKE_TICKET_PRICE);
+        ticketRequest.setDescription(FAKE_TICKET_DESCRIPTION);
 
         ticketEntity = new TicketEntity();
         ticketEntity.setId(ObjectId.get().toString());
         ticketEntity.setUserId(FAKE_USER_ID);
+        ticketEntity.setDescription(FAKE_TICKET_DESCRIPTION);
         ticketEntity.setTitle(FAKE_TICKET_TITLE);
         ticketEntity.setPrice(FAKE_TICKET_PRICE);
     }
@@ -75,9 +78,10 @@ public class TicketServiceTests extends BaseIntegrationTests {
         assertEquals(createdTicket.getTitle(), ticketEntity.getTitle());
         assertEquals(createdTicket.getPrice(), ticketEntity.getPrice());
         assertEquals(createdTicket.getUserId(), ticketEntity.getUserId());
+        assertEquals(createdTicket.getDescription(), ticketEntity.getDescription());
     }
 
-    @Test
+     @Test
     public void testShouldUpdateTicketSuccessWhenRequestIsCorrect() {
         //when
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticketEntity));
@@ -87,7 +91,8 @@ public class TicketServiceTests extends BaseIntegrationTests {
         TicketDTO updatedTicket = ticketService.updateTicket(ticketRequest, ticketEntity.getId(), FAKE_TOKEN);
         assertEquals(updatedTicket.getTitle(), ticketEntity.getTitle());
         assertEquals(updatedTicket.getPrice(), ticketEntity.getPrice());
-    }
+        assertEquals(updatedTicket.getDescription(), ticketEntity.getDescription());
+     }
 
     @Test
     public void testShouldNotPassVerifyWhenTicketIdIsNotCorrect() {
@@ -115,6 +120,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
             ticketsList.add(new TicketEntity(ObjectId.get().toString(),
                     FAKE_TICKET_TITLE + i,
                     FAKE_TICKET_PRICE,
+                    TICKET_DESCRIPTION + i,
                     ObjectId.get().toString(),
                     ObjectId.get().toString()));
         }
@@ -137,6 +143,7 @@ public class TicketServiceTests extends BaseIntegrationTests {
         TicketDTO foundTicket = ticketService.findTicketById(ticketId);
         assertEquals(foundTicket.getUserId(), ticketEntity.getUserId());
         assertEquals(foundTicket.getId(), ticketEntity.getId());
+        assertEquals(foundTicket.getDescription(), ticketEntity.getDescription());
         assertEquals(foundTicket.getPrice(), ticketEntity.getPrice());
         assertEquals(foundTicket.getTitle(), ticketEntity.getTitle());
     }
