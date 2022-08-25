@@ -1,6 +1,7 @@
 package com.spring.exercise.integrationtests;
 
 import com.spring.exercise.entity.UserEntity;
+import com.spring.exercise.model.user.LoginRequest;
 import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.repository.UserRepository;
@@ -49,6 +50,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @BeforeEach
     public void setUp() {
+        loginRequest = new LoginRequest(USER_NAME, USER_PASSWORD);
         registrationRequest = new RegistrationRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
@@ -141,8 +143,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldLoginWhenCredentialsAreCorrect() throws Exception {
         UserDTO user = userService.createUser(registrationRequest);
-
-        MvcResult result = userLoginAction(registrationRequest);
+        MvcResult result = userLoginAction(loginRequest);
 
         int tokenIndexStart = 7;
         String token = result.getResponse().getHeader("Authorization").substring(tokenIndexStart);
@@ -156,7 +157,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldNotAcceptLoginRequestWhenCredentialsAreIncorrect() throws Exception {
         userService.createUser(registrationRequest);
-        RegistrationRequest malformedLoginRequest = new RegistrationRequest("marek1@gmail.com", "sapp", DATE_OF_BIRTH);
+        LoginRequest malformedLoginRequest = new LoginRequest("marek1@gmail.com", "sapp");
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -171,7 +172,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldNotAcceptLoginRequestWhenEmailIsNotWellFormed() throws Exception {
         userService.createUser(registrationRequest);
-        RegistrationRequest malformedLoginRequest = new RegistrationRequest("marekgmail.com", "pass", DATE_OF_BIRTH);
+        LoginRequest malformedLoginRequest = new LoginRequest("marekgmail.com", "pass");
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -186,7 +187,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldNotAcceptLoginRequestWhenPasswordSizeDoesNotMatch() throws Exception {
         userService.createUser(registrationRequest);
-        RegistrationRequest malformedLoginRequest = new RegistrationRequest("marek@gmail.com", "pss", DATE_OF_BIRTH);
+        LoginRequest malformedLoginRequest = new LoginRequest("marek@gmail.com", "pss");
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -203,7 +204,8 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
         MvcResult resultUser = createDefaultUser();
 
         String token = resultUser.getResponse().getHeader("Authorization").toString();
-        Optional<UserEntity> user = userRepository.findByUserName(registrationRequest.getUsername());
+        Optional<UserEntity> user = userRepository.findByUserName(loginRequest.getUsername());
+
         assertTrue(user.isPresent());
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/users/currentuser")

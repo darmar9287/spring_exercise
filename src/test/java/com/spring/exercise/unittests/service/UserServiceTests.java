@@ -1,5 +1,6 @@
 package com.spring.exercise.unittests.service;
 
+import com.spring.exercise.model.user.LoginRequest;
 import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
@@ -43,10 +44,9 @@ public class UserServiceTests {
     private Authentication authentication;
     @Mock
     private PasswordEncoder passwordEncoder;
-
     private UserEntity user;
-
-    private RegistrationRequest request;
+    private RegistrationRequest registrationRequest;
+    private LoginRequest loginRequest;
 
     private final static String USER_NAME = "marek_test@gmail.com";
     private final static String USER_PASS = "pass";
@@ -62,7 +62,8 @@ public class UserServiceTests {
         user.setPassword(USER_PASS);
         user.setDateOfBirth(DATE_OF_BIRTH);
 
-        request = new RegistrationRequest(USER_NAME, USER_PASS, DATE_OF_BIRTH);
+        loginRequest = new LoginRequest(USER_NAME, USER_PASS);
+        registrationRequest = new RegistrationRequest(USER_NAME, USER_PASS, DATE_OF_BIRTH);
     }
 
     @Test
@@ -80,7 +81,7 @@ public class UserServiceTests {
         when(userRepository.save(any())).thenReturn(user);
         when(passwordEncoder.encode(USER_PASS)).thenReturn(USER_PASS);
         //then
-        UserDTO createdUser = userService.createUser(request);
+        UserDTO createdUser = userService.createUser(registrationRequest);
         assertEquals(createdUser.getUserName(), USER_NAME);
         assertEquals(createdUser.getDateOfBirth(), DATE_OF_BIRTH);
     }
@@ -90,7 +91,7 @@ public class UserServiceTests {
         //when
         when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.of(user));
         //then
-        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(request));
+        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(registrationRequest));
     }
 
     @Test
@@ -99,10 +100,10 @@ public class UserServiceTests {
         String exampleJwt = "3x4mpl3jwt";
         //when
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
-        when(userRepository.findByUserName(request.getUsername())).thenReturn(Optional.of(user));
+        when(userRepository.findByUserName(registrationRequest.getUsername())).thenReturn(Optional.of(user));
         when(jwtUtils.generateToken(any(), any())).thenReturn(exampleJwt);
         //then
-        String jwt = userService.createLoginJwt(request);
+        String jwt = userService.createLoginJwt(loginRequest);
         assertTrue(!jwt.isEmpty());
     }
 

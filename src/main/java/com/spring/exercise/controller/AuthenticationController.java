@@ -1,5 +1,6 @@
 package com.spring.exercise.controller;
 
+import com.spring.exercise.model.user.LoginRequest;
 import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
@@ -33,9 +34,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign_in")
-    private ResponseEntity<?> login(@Valid @RequestBody RegistrationRequest registrationRequest, Errors errors) {
+    private ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, Errors errors) {
         RequestBodyValidator.check(errors);
-        String jwt = userServiceImpl.createLoginJwt(registrationRequest);
+        String jwt = userServiceImpl.createLoginJwt(loginRequest);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authorization", "Bearer " + jwt);
 

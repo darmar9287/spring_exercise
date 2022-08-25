@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.spring.exercise.model.ticket.TicketRequest;
+import com.spring.exercise.model.user.LoginRequest;
 import com.spring.exercise.model.user.RegistrationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ public class BaseIntegrationTests {
     private MockMvc mockMvc;
 
     protected RegistrationRequest registrationRequest;
+    protected LoginRequest loginRequest;
     protected final static String USER_NAME = "marek_test@gmail.com";
     protected final static String USER_PASSWORD = "pass";
     protected final static String TICKET_DESCRIPTION = "fake_description_";
@@ -33,10 +35,10 @@ public class BaseIntegrationTests {
         return resultUser.getResponse().getHeader("Authorization");
     }
 
-    protected MvcResult userLoginAction(RegistrationRequest registrationRequest) throws Exception {
+    protected MvcResult userLoginAction(LoginRequest loginRequest) throws Exception {
        return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
-                        .content(mapToJson(registrationRequest))
+                        .content(mapToJson(loginRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
