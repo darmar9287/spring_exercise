@@ -5,7 +5,7 @@ import com.spring.exercise.entity.PaymentEntity;
 import com.spring.exercise.model.order.OrderCreateRequest;
 import com.spring.exercise.model.payment.PaymentRequest;
 import com.spring.exercise.model.ticket.TicketRequest;
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.PaymentRepository;
 import com.spring.exercise.repository.TicketRepository;
@@ -64,7 +64,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @BeforeEach
     public void setUp() {
         ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
-        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
+        registrationRequest = new RegistrationRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
     @AfterEach
@@ -77,8 +77,8 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith201WhenPaymentIsCompleted() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
-        MvcResult user = createCustomUser(authRequestUser);
+        RegistrationRequest registrationRequestUser = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult user = createCustomUser(registrationRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
@@ -194,10 +194,10 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith404WhenOrderDoesNotBelongToUser() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestFirstUser = new AuthRequest("first_user_order@mail.com", "pass", DATE_OF_BIRTH);
-        MvcResult firstUser = createCustomUser(authRequestFirstUser);
-        AuthRequest authRequestSecondUser = new AuthRequest("second_user_order@mail.com", "pass", DATE_OF_BIRTH);
-        MvcResult secondUser = createCustomUser(authRequestSecondUser);
+        RegistrationRequest registrationRequestFirstUser = new RegistrationRequest("first_user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequestFirstUser);
+        RegistrationRequest registrationRequestSecondUser = new RegistrationRequest("second_user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult secondUser = createCustomUser(registrationRequestSecondUser);
 
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
@@ -241,8 +241,8 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith400WhenOrderStatusIsCompleted() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
-        MvcResult user = createCustomUser(authRequestUser);
+        RegistrationRequest registrationRequestUser = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult user = createCustomUser(registrationRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
@@ -282,8 +282,8 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith400WhenOrderStatusIsCancelled() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
-        MvcResult user = createCustomUser(authRequestUser);
+        RegistrationRequest registrationRequestUser = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult user = createCustomUser(registrationRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);

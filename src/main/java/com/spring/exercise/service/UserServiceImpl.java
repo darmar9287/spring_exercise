@@ -1,6 +1,6 @@
 package com.spring.exercise.service;
 
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.user.AuthResponse;
 import com.spring.exercise.model.user.CurrentUserResponse;
 import com.spring.exercise.model.user.UserDTO;
@@ -31,32 +31,33 @@ public class UserServiceImpl implements UserDetailsService {
     private final PasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public UserDTO createUser(AuthRequest authRequest) {
-        if (userRepository.findByUserName(authRequest.getUsername()).isPresent()) {
+    public UserDTO createUser(RegistrationRequest registrationRequest) {
+        if (userRepository.findByUserName(registrationRequest.getUsername()).isPresent()) {
             throw new UserAlreadyExistsException();
         }
         final var userEntity = new UserEntity();
-        userEntity.setUserName(authRequest.getUsername());
-        userEntity.setPassword(bCryptPasswordEncoder.encode(authRequest.getPassword()));
-        userEntity.setDateOfBirth(authRequest.getDateOfBirth());
+        userEntity.setUserName(registrationRequest.getUsername());
+        userEntity.setPassword(bCryptPasswordEncoder.encode(registrationRequest.getPassword()));
+        userEntity.setDateOfBirth(registrationRequest.getDateOfBirth());
+
         userRepository.save(userEntity);
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(registrationRequest.getUsername(), registrationRequest.getPassword()));
         final var jwt = jwtUtils.generateToken(authentication, userEntity.getId());
 
         return UserDTO.mapFromEntity(userEntity, jwt);
     }
 
-    public String createLoginJwt(AuthRequest authRequest) {
+    public String createLoginJwt(RegistrationRequest registrationRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(registrationRequest.getUsername(), registrationRequest.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (AuthenticationException e) {
             throw new InvalidCredentialsException();
         }
-        Optional<UserEntity> user = getUserFromDB(authRequest.getUsername());
+        Optional<UserEntity> user = getUserFromDB(registrationRequest.getUsername());
 
         return jwtUtils.generateToken(authentication, user.get().getId());
     }

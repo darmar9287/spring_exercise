@@ -1,6 +1,6 @@
 package com.spring.exercise.unittests.service;
 
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
 import com.spring.exercise.entity.UserEntity;
@@ -46,7 +46,7 @@ public class UserServiceTests {
 
     private UserEntity user;
 
-    private AuthRequest request;
+    private RegistrationRequest request;
 
     private final static String USER_NAME = "marek_test@gmail.com";
     private final static String USER_PASS = "pass";
@@ -62,7 +62,7 @@ public class UserServiceTests {
         user.setPassword(USER_PASS);
         user.setDateOfBirth(DATE_OF_BIRTH);
 
-        request = new AuthRequest(USER_NAME, USER_PASS, DATE_OF_BIRTH);
+        request = new RegistrationRequest(USER_NAME, USER_PASS, DATE_OF_BIRTH);
     }
 
     @Test

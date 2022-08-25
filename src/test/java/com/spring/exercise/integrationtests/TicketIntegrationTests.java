@@ -1,7 +1,7 @@
 package com.spring.exercise.integrationtests;
 
 import com.jayway.jsonpath.JsonPath;
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.ticket.TicketRequest;
 import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
@@ -56,7 +56,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @BeforeEach
     public void setUp() {
         ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
-        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
+        registrationRequest = new RegistrationRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
     @AfterEach
@@ -254,7 +254,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String tokenValue = token.substring(tokenIndexStart);
         String userId = jwtUtils.extractId(tokenValue);
 
-        MvcResult fakeUser = createCustomUser(new AuthRequest("fake_user@fake.com", "pass", DATE_OF_BIRTH));
+        MvcResult fakeUser = createCustomUser(new RegistrationRequest("fake_user@fake.com", "pass", DATE_OF_BIRTH));
         String fakeUserToken = fetchToken(fakeUser);
 
         String ticketCreateResponse = createTicketForUser(userId, token).getResponse().getContentAsString();

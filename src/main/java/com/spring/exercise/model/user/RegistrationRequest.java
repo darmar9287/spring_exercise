@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthRequest {
+public class RegistrationRequest {
     @NotBlank
     @Email(message = AppMessages.EMAIL_FORMAT_ERROR)
     private String username;

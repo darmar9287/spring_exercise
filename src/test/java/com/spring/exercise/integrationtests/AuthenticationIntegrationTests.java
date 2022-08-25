@@ -1,7 +1,7 @@
 package com.spring.exercise.integrationtests;
 
 import com.spring.exercise.entity.UserEntity;
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
@@ -49,7 +49,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @BeforeEach
     public void setUp() {
-        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
+        registrationRequest = new RegistrationRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
     @AfterEach
@@ -60,9 +60,9 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith200WhenUserCreated() throws Exception {
         MvcResult result = createDefaultUser();
-        Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
+        Optional<UserEntity> user = userRepository.findByUserName(registrationRequest.getUsername());
         assertTrue(user.isPresent());
-        assertEquals(authRequest.getUsername(), user.get().getUserName());
+        assertEquals(registrationRequest.getUsername(), user.get().getUserName());
         assertTrue(passwordEncoder.matches(USER_PASSWORD, user.get().getPassword()));
         int tokenIndexStart = 7;
         String token = result.getResponse().getHeader("Authorization").substring(tokenIndexStart);
@@ -76,11 +76,11 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldResponseWith401IfUserExists() throws Exception {
-        userService.createUser(authRequest);
+        userService.createUser(registrationRequest);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
-                        .content(mapToJson(authRequest))
+                        .content(mapToJson(registrationRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
@@ -90,7 +90,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldResponseWith400IfEmailIsNotWellFormed() throws Exception {
-        AuthRequest malformedRequest = new AuthRequest();
+        RegistrationRequest malformedRequest = new RegistrationRequest();
         malformedRequest.setUsername("marek_testgmail.com");
         malformedRequest.setPassword("pass");
         malformedRequest.setDateOfBirth(DATE_OF_BIRTH);
@@ -107,7 +107,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldResponseWith400IfPasswordDoesNotMetRequirements() throws Exception {
-        AuthRequest malformedRequest = new AuthRequest();
+        RegistrationRequest malformedRequest = new RegistrationRequest();
         malformedRequest.setUsername("marek_test@gmail.com");
         malformedRequest.setPassword("pas");
         malformedRequest.setDateOfBirth(DATE_OF_BIRTH);
@@ -123,7 +123,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldResponseWith400IfAgeDoesNotMetRequirements() throws Exception {
-        AuthRequest malformedRequest = new AuthRequest();
+        RegistrationRequest malformedRequest = new RegistrationRequest();
         LocalDate age = LocalDate.now();
         malformedRequest.setUsername("marek_test@gmail.com");
         malformedRequest.setPassword("pass");
@@ -140,9 +140,9 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldLoginWhenCredentialsAreCorrect() throws Exception {
-        UserDTO user = userService.createUser(authRequest);
+        UserDTO user = userService.createUser(registrationRequest);
 
-        MvcResult result = userLoginAction(authRequest);
+        MvcResult result = userLoginAction(registrationRequest);
 
         int tokenIndexStart = 7;
         String token = result.getResponse().getHeader("Authorization").substring(tokenIndexStart);
@@ -155,8 +155,8 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldNotAcceptLoginRequestWhenCredentialsAreIncorrect() throws Exception {
-        userService.createUser(authRequest);
-        AuthRequest malformedLoginRequest = new AuthRequest("marek1@gmail.com", "sapp", DATE_OF_BIRTH);
+        userService.createUser(registrationRequest);
+        RegistrationRequest malformedLoginRequest = new RegistrationRequest("marek1@gmail.com", "sapp", DATE_OF_BIRTH);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -170,8 +170,8 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldNotAcceptLoginRequestWhenEmailIsNotWellFormed() throws Exception {
-        userService.createUser(authRequest);
-        AuthRequest malformedLoginRequest = new AuthRequest("marekgmail.com", "pass", DATE_OF_BIRTH);
+        userService.createUser(registrationRequest);
+        RegistrationRequest malformedLoginRequest = new RegistrationRequest("marekgmail.com", "pass", DATE_OF_BIRTH);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -185,8 +185,8 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @Test
     public void shouldNotAcceptLoginRequestWhenPasswordSizeDoesNotMatch() throws Exception {
-        userService.createUser(authRequest);
-        AuthRequest malformedLoginRequest = new AuthRequest("marek@gmail.com", "pss", DATE_OF_BIRTH);
+        userService.createUser(registrationRequest);
+        RegistrationRequest malformedLoginRequest = new RegistrationRequest("marek@gmail.com", "pss", DATE_OF_BIRTH);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -203,7 +203,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
         MvcResult resultUser = createDefaultUser();
 
         String token = resultUser.getResponse().getHeader("Authorization").toString();
-        Optional<UserEntity> user = userRepository.findByUserName(authRequest.getUsername());
+        Optional<UserEntity> user = userRepository.findByUserName(registrationRequest.getUsername());
         assertTrue(user.isPresent());
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/users/currentuser")

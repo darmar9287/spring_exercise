@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.spring.exercise.model.ticket.TicketRequest;
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,7 +23,7 @@ public class BaseIntegrationTests {
     @Autowired
     private MockMvc mockMvc;
 
-    protected AuthRequest authRequest;
+    protected RegistrationRequest registrationRequest;
     protected final static String USER_NAME = "marek_test@gmail.com";
     protected final static String USER_PASSWORD = "pass";
     protected final static String TICKET_DESCRIPTION = "fake_description_";
@@ -33,10 +33,10 @@ public class BaseIntegrationTests {
         return resultUser.getResponse().getHeader("Authorization");
     }
 
-    protected MvcResult userLoginAction(AuthRequest authRequest) throws Exception {
+    protected MvcResult userLoginAction(RegistrationRequest registrationRequest) throws Exception {
        return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
-                        .content(mapToJson(authRequest))
+                        .content(mapToJson(registrationRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -45,11 +45,11 @@ public class BaseIntegrationTests {
     }
 
     protected MvcResult createDefaultUser() throws Exception{
-        authRequest.setUsername("marek_test@gmail.com");
-        authRequest.setPassword("pass");
+        registrationRequest.setUsername("marek_test@gmail.com");
+        registrationRequest.setPassword("pass");
         return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
-                        .content(mapToJson(authRequest))
+                        .content(mapToJson(registrationRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -60,10 +60,10 @@ public class BaseIntegrationTests {
                 .andReturn();
     }
 
-    protected MvcResult createCustomUser(AuthRequest authRequest) throws Exception{
+    protected MvcResult createCustomUser(RegistrationRequest registrationRequest) throws Exception{
         return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
-                        .content(mapToJson(authRequest))
+                        .content(mapToJson(registrationRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
