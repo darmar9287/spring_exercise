@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -37,6 +38,7 @@ public class UserRepositoryTests {
         user.setId(ObjectId.get().toString());
         user.setUserName(USER_NAME);
         user.setPassword(USER_PASS);
+        user.setDateOfBirth(LocalDate.of(1987, 1, 8));
     }
 
     @AfterEach
@@ -52,6 +54,7 @@ public class UserRepositoryTests {
         //then
         Optional<UserEntity> fetchedUser = userRepository.findByUserName(savedUser.getUserName());
         assertEquals(savedUser.getUserName(), fetchedUser.get().getUserName());
+        assertEquals(savedUser.getDateOfBirth(), fetchedUser.get().getDateOfBirth());
     }
 
     @Test

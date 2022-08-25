@@ -38,6 +38,7 @@ public class UserServiceImpl implements UserDetailsService {
         final var userEntity = new UserEntity();
         userEntity.setUserName(authRequest.getUsername());
         userEntity.setPassword(bCryptPasswordEncoder.encode(authRequest.getPassword()));
+        userEntity.setDateOfBirth(authRequest.getDateOfBirth());
         userRepository.save(userEntity);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));

@@ -10,7 +10,7 @@ import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.PaymentRepository;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
-import com.spring.exercise.utils.ErrorAppMessages;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
 import org.bson.types.ObjectId;
@@ -64,7 +64,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @BeforeEach
     public void setUp() {
         ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
-        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
+        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
     @AfterEach
@@ -77,7 +77,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith201WhenPaymentIsCompleted() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
+        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
         MvcResult user = createCustomUser(authRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
@@ -129,7 +129,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(paymentRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -168,7 +168,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(paymentRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -186,7 +186,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(paymentRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -194,9 +194,9 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith404WhenOrderDoesNotBelongToUser() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestFirstUser = new AuthRequest("first_user_order@mail.com", "pass");
+        AuthRequest authRequestFirstUser = new AuthRequest("first_user_order@mail.com", "pass", DATE_OF_BIRTH);
         MvcResult firstUser = createCustomUser(authRequestFirstUser);
-        AuthRequest authRequestSecondUser = new AuthRequest("second_user_order@mail.com", "pass");
+        AuthRequest authRequestSecondUser = new AuthRequest("second_user_order@mail.com", "pass", DATE_OF_BIRTH);
         MvcResult secondUser = createCustomUser(authRequestSecondUser);
 
         int tokenIndexStart = 7;
@@ -241,7 +241,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith400WhenOrderStatusIsCompleted() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
+        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
         MvcResult user = createCustomUser(authRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
@@ -282,7 +282,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith400WhenOrderStatusIsCancelled() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
+        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
         MvcResult user = createCustomUser(authRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);

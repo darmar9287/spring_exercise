@@ -1,6 +1,8 @@
 package com.spring.exercise.integrationtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.spring.exercise.model.ticket.TicketRequest;
 import com.spring.exercise.model.user.AuthRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +13,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.LocalDate;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 public class BaseIntegrationTests {
     @Autowired
@@ -24,6 +27,7 @@ public class BaseIntegrationTests {
     protected final static String USER_NAME = "marek_test@gmail.com";
     protected final static String USER_PASSWORD = "pass";
     protected final static String TICKET_DESCRIPTION = "fake_description_";
+    protected static LocalDate DATE_OF_BIRTH = LocalDate.of(1987, 1, 8);
 
     protected String fetchToken(MvcResult resultUser) {
         return resultUser.getResponse().getHeader("Authorization");
@@ -88,7 +92,10 @@ public class BaseIntegrationTests {
 
     protected static String mapToJson(final Object obj) {
         try {
-            return new ObjectMapper().writeValueAsString(obj);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            return mapper.writeValueAsString(obj);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -1,11 +1,11 @@
 package com.spring.exercise.integrationtests;
 
+import com.spring.exercise.entity.UserEntity;
 import com.spring.exercise.model.user.AuthRequest;
 import com.spring.exercise.model.user.UserDTO;
-import com.spring.exercise.entity.UserEntity;
 import com.spring.exercise.repository.UserRepository;
 import com.spring.exercise.service.UserServiceImpl;
-import com.spring.exercise.utils.ErrorAppMessages;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,7 +49,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
     @BeforeEach
     public void setUp() {
-        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
+        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
     @AfterEach
@@ -70,6 +71,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
 
         assertEquals(user.get().getUserName(), extractedUsername);
         assertEquals(user.get().getId(), extractedUserId);
+        assertEquals(user.get().getDateOfBirth(), DATE_OF_BIRTH);
     }
 
     @Test
@@ -83,7 +85,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.EMAIL_EXISTS_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_EXISTS_ERROR));
     }
 
     @Test
@@ -91,6 +93,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
         AuthRequest malformedRequest = new AuthRequest();
         malformedRequest.setUsername("marek_testgmail.com");
         malformedRequest.setPassword("pass");
+        malformedRequest.setDateOfBirth(DATE_OF_BIRTH);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
@@ -99,7 +102,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.EMAIL_FORMAT_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_FORMAT_ERROR));
     }
 
     @Test
@@ -107,7 +110,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
         AuthRequest malformedRequest = new AuthRequest();
         malformedRequest.setUsername("marek_test@gmail.com");
         malformedRequest.setPassword("pas");
-
+        malformedRequest.setDateOfBirth(DATE_OF_BIRTH);
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
                         .content(mapToJson(malformedRequest))
@@ -115,7 +118,24 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.PASSWORD_SIZE_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.PASSWORD_SIZE_ERROR));
+    }
+
+    @Test
+    public void shouldResponseWith400IfAgeDoesNotMetRequirements() throws Exception {
+        AuthRequest malformedRequest = new AuthRequest();
+        LocalDate age = LocalDate.now();
+        malformedRequest.setUsername("marek_test@gmail.com");
+        malformedRequest.setPassword("pass");
+        malformedRequest.setDateOfBirth(age);
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/users/sign_up")
+                        .content(mapToJson(malformedRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.AGE_REQUIREMENT_ERROR));
     }
 
     @Test
@@ -136,7 +156,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldNotAcceptLoginRequestWhenCredentialsAreIncorrect() throws Exception {
         userService.createUser(authRequest);
-        AuthRequest malformedLoginRequest = new AuthRequest("marek1@gmail.com", "sapp");
+        AuthRequest malformedLoginRequest = new AuthRequest("marek1@gmail.com", "sapp", DATE_OF_BIRTH);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -145,13 +165,13 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.INCORRECT_CREDENTIALS_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.INCORRECT_CREDENTIALS_ERROR));
     }
 
     @Test
     public void shouldNotAcceptLoginRequestWhenEmailIsNotWellFormed() throws Exception {
         userService.createUser(authRequest);
-        AuthRequest malformedLoginRequest = new AuthRequest("marekgmail.com", "pass");
+        AuthRequest malformedLoginRequest = new AuthRequest("marekgmail.com", "pass", DATE_OF_BIRTH);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -159,14 +179,14 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.EMAIL_FORMAT_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.EMAIL_FORMAT_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
 
     @Test
     public void shouldNotAcceptLoginRequestWhenPasswordSizeDoesNotMatch() throws Exception {
         userService.createUser(authRequest);
-        AuthRequest malformedLoginRequest = new AuthRequest("marek@gmail.com", "pss");
+        AuthRequest malformedLoginRequest = new AuthRequest("marek@gmail.com", "pss", DATE_OF_BIRTH);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
@@ -174,7 +194,7 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.PASSWORD_SIZE_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.PASSWORD_SIZE_ERROR))
                 .andDo(MockMvcResultHandlers.print());
     }
 
@@ -212,6 +232,6 @@ class AuthenticationIntegrationTests extends BaseIntegrationTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR));
     }
 }

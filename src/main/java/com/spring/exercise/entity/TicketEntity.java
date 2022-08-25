@@ -1,6 +1,6 @@
 package com.spring.exercise.entity;
 
-import com.spring.exercise.utils.ErrorAppMessages;
+import com.spring.exercise.utils.AppMessages;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,9 +19,9 @@ import java.math.BigDecimal;
 public class TicketEntity {
     @Id
     private String id;
-    @NotBlank(message = ErrorAppMessages.BLANK_ERROR)
+    @NotBlank(message = AppMessages.BLANK_ERROR)
     private String title;
-    @DecimalMin(value = "0.5", inclusive = false, message = ErrorAppMessages.TICKET_PRICE_TOO_LOW_ERROR)
+    @DecimalMin(value = "0.5", inclusive = false, message = AppMessages.TICKET_PRICE_TOO_LOW_ERROR)
     private BigDecimal price;
     @NonNull
     @Size(max = 500)

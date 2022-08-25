@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -49,6 +50,7 @@ public class UserServiceTests {
 
     private final static String USER_NAME = "marek_test@gmail.com";
     private final static String USER_PASS = "pass";
+    private static LocalDate DATE_OF_BIRTH = LocalDate.of(1987, 1, 8);
 
     public UserServiceTests() { }
 
@@ -58,8 +60,9 @@ public class UserServiceTests {
         user.setId(ObjectId.get().toString());
         user.setUserName(USER_NAME);
         user.setPassword(USER_PASS);
+        user.setDateOfBirth(DATE_OF_BIRTH);
 
-        request = new AuthRequest(USER_NAME, USER_PASS);
+        request = new AuthRequest(USER_NAME, USER_PASS, DATE_OF_BIRTH);
     }
 
     @Test
@@ -79,6 +82,7 @@ public class UserServiceTests {
         //then
         UserDTO createdUser = userService.createUser(request);
         assertEquals(createdUser.getUserName(), USER_NAME);
+        assertEquals(createdUser.getDateOfBirth(), DATE_OF_BIRTH);
     }
 
     @Test
