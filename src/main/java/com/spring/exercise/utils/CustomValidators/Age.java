@@ -21,5 +21,7 @@ public @interface Age {
     Class<?>[] groups() default { };
 
     Class<? extends Payload>[] payload() default { };
+
+    int[] value();
 }
 

@@ -15,12 +15,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegistrationRequest {
+    private static final int MIN_USER_AGE = 18;
     @NotBlank
     @Email(message = AppMessages.EMAIL_FORMAT_ERROR)
     private String username;
     @NotBlank
     @Size(min = 4, max = 20, message = AppMessages.PASSWORD_SIZE_ERROR)
     private String password;
-    @Age
+    @Age(value = MIN_USER_AGE)
     private LocalDate dateOfBirth;
 }

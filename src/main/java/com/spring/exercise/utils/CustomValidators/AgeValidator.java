@@ -7,10 +7,15 @@ import java.time.Period;
 
 public class AgeValidator implements ConstraintValidator<Age, LocalDate> {
 
-    private static int MINIMUM_REQUIRED_AGE;
+    private int minAge;
+
+    @Override
+    public void initialize(final Age constraintAnnotation) {
+        minAge = constraintAnnotation.value()[0];
+    }
 
     @Override
     public boolean isValid(LocalDate dateOfBirth, ConstraintValidatorContext constraintValidatorContext) {
-        return Period.between(dateOfBirth, LocalDate.now()).getYears() > MINIMUM_REQUIRED_AGE;
+        return Period.between(dateOfBirth, LocalDate.now()).getYears() > minAge;
     }
 }

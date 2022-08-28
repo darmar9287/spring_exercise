@@ -21,6 +21,5 @@ public class AppMessages {
 
     public static final String OWN_TICKET_PURCHASE_ERROR = "You cannot buy your own ticket";
 
-    public static final String AGE_REQUIREMENT_ERROR = "You need to be over 18 yaers old to use this app!";
-
+    public static final String AGE_REQUIREMENT_ERROR = "You need to be over 18 years old to use this app!";
 }

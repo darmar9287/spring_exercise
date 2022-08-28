@@ -17,6 +17,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity {
+    private static final int MIN_USER_AGE = 18;
     @Id
     private String id;
     @Indexed(unique = true)
@@ -25,7 +26,7 @@ public class UserEntity {
     @NonNull
     @Size(min = 4, max = 20)
     private String password;
-    @Age
+    @Age(value = MIN_USER_AGE)
     private LocalDate dateOfBirth;
 
     @Override
