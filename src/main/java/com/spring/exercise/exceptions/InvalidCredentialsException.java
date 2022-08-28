@@ -1,6 +1,6 @@
 package com.spring.exercise.exceptions;
 
-import com.spring.exercise.utils.ErrorAppMessages;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.ErrorResponse;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public class InvalidCredentialsException extends CustomExceptions {
 
     public InvalidCredentialsException() {
-       super(ErrorAppMessages.INCORRECT_CREDENTIALS_ERROR, 401);
+       super(AppMessages.INCORRECT_CREDENTIALS_ERROR, 401);
     }
 
     @Override

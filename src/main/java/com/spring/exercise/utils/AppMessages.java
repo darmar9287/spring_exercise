@@ -1,6 +1,6 @@
 package com.spring.exercise.utils;
 
-public class ErrorAppMessages {
+public class AppMessages {
     public static final String EMAIL_EXISTS_ERROR = "email in use";
 
     public static final String PASSWORD_SIZE_ERROR = "size must be between 4 and 20";
@@ -20,4 +20,6 @@ public class ErrorAppMessages {
     public static final String TICKET_ALREADY_BOOKED_ERROR = "Ticket is already reserved";
 
     public static final String OWN_TICKET_PURCHASE_ERROR = "You cannot buy your own ticket";
+
+    public static final String AGE_REQUIREMENT_ERROR = "You need to be over 18 years old to use this app!";
 }

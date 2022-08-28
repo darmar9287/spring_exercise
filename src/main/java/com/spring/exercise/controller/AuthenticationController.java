@@ -1,6 +1,7 @@
 package com.spring.exercise.controller;
 
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.LoginRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.service.UserServiceImpl;
 import com.spring.exercise.utils.RequestBodyValidator;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,9 @@ public class AuthenticationController {
     private final UserServiceImpl userServiceImpl;
 
     @PostMapping(value = "/sign_up", produces = "application/json;charset=UTF-8")
-    private ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
+    private ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest registrationRequest, Errors errors) {
         RequestBodyValidator.check(errors);
-        var result = userServiceImpl.createUser(authRequest);
+        var result = userServiceImpl.createUser(registrationRequest);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authorization", "Bearer " + result.getJwt());
 
@@ -33,9 +34,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign_in")
-    private ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest, Errors errors) {
+    private ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, Errors errors) {
         RequestBodyValidator.check(errors);
-        String jwt = userServiceImpl.createLoginJwt(authRequest);
+        String jwt = userServiceImpl.createLoginJwt(loginRequest);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("Authorization", "Bearer " + jwt);
 

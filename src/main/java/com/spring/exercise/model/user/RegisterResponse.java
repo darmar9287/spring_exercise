@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
+public class RegisterResponse {
 
     private String id;
     private String email;
 
-    public static AuthResponse mapFromDTO(UserDTO userDTO) {
-        return new AuthResponse(userDTO.getId(), userDTO.getUserName());
+    public static RegisterResponse mapFromDTO(UserDTO userDTO) {
+        return new RegisterResponse(userDTO.getId(), userDTO.getUserName());
     }
 }

@@ -1,8 +1,11 @@
 package com.spring.exercise.integrationtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.spring.exercise.model.ticket.TicketRequest;
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.LoginRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -11,28 +14,31 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.LocalDate;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 public class BaseIntegrationTests {
     @Autowired
     private MockMvc mockMvc;
 
-    protected AuthRequest authRequest;
+    protected RegistrationRequest registrationRequest;
+    protected LoginRequest loginRequest;
     protected final static String USER_NAME = "marek_test@gmail.com";
     protected final static String USER_PASSWORD = "pass";
     protected final static String TICKET_DESCRIPTION = "fake_description_";
+    protected static LocalDate DATE_OF_BIRTH = LocalDate.of(1987, 1, 8);
 
     protected String fetchToken(MvcResult resultUser) {
         return resultUser.getResponse().getHeader("Authorization");
     }
 
-    protected MvcResult userLoginAction(AuthRequest authRequest) throws Exception {
+    protected MvcResult userLoginAction(LoginRequest loginRequest) throws Exception {
        return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_in")
-                        .content(mapToJson(authRequest))
+                        .content(mapToJson(loginRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -41,11 +47,11 @@ public class BaseIntegrationTests {
     }
 
     protected MvcResult createDefaultUser() throws Exception{
-        authRequest.setUsername("marek_test@gmail.com");
-        authRequest.setPassword("pass");
+        registrationRequest.setUsername("marek_test@gmail.com");
+        registrationRequest.setPassword("pass");
         return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
-                        .content(mapToJson(authRequest))
+                        .content(mapToJson(registrationRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -56,10 +62,10 @@ public class BaseIntegrationTests {
                 .andReturn();
     }
 
-    protected MvcResult createCustomUser(AuthRequest authRequest) throws Exception{
+    protected MvcResult createCustomUser(RegistrationRequest registrationRequest) throws Exception{
         return mockMvc.perform(MockMvcRequestBuilders
                         .post("/users/sign_up")
-                        .content(mapToJson(authRequest))
+                        .content(mapToJson(registrationRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -88,7 +94,10 @@ public class BaseIntegrationTests {
 
     protected static String mapToJson(final Object obj) {
         try {
-            return new ObjectMapper().writeValueAsString(obj);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            return mapper.writeValueAsString(obj);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

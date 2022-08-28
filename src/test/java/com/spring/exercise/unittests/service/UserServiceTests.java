@@ -1,6 +1,7 @@
 package com.spring.exercise.unittests.service;
 
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.LoginRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.user.UserDTO;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
 import com.spring.exercise.entity.UserEntity;
@@ -19,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -42,13 +44,13 @@ public class UserServiceTests {
     private Authentication authentication;
     @Mock
     private PasswordEncoder passwordEncoder;
-
     private UserEntity user;
-
-    private AuthRequest request;
+    private RegistrationRequest registrationRequest;
+    private LoginRequest loginRequest;
 
     private final static String USER_NAME = "marek_test@gmail.com";
     private final static String USER_PASS = "pass";
+    private static LocalDate DATE_OF_BIRTH = LocalDate.of(1987, 1, 8);
 
     public UserServiceTests() { }
 
@@ -58,8 +60,10 @@ public class UserServiceTests {
         user.setId(ObjectId.get().toString());
         user.setUserName(USER_NAME);
         user.setPassword(USER_PASS);
+        user.setDateOfBirth(DATE_OF_BIRTH);
 
-        request = new AuthRequest(USER_NAME, USER_PASS);
+        loginRequest = new LoginRequest(USER_NAME, USER_PASS);
+        registrationRequest = new RegistrationRequest(USER_NAME, USER_PASS, DATE_OF_BIRTH);
     }
 
     @Test
@@ -77,8 +81,9 @@ public class UserServiceTests {
         when(userRepository.save(any())).thenReturn(user);
         when(passwordEncoder.encode(USER_PASS)).thenReturn(USER_PASS);
         //then
-        UserDTO createdUser = userService.createUser(request);
+        UserDTO createdUser = userService.createUser(registrationRequest);
         assertEquals(createdUser.getUserName(), USER_NAME);
+        assertEquals(createdUser.getDateOfBirth(), DATE_OF_BIRTH);
     }
 
     @Test
@@ -86,7 +91,7 @@ public class UserServiceTests {
         //when
         when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.of(user));
         //then
-        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(request));
+        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(registrationRequest));
     }
 
     @Test
@@ -95,10 +100,10 @@ public class UserServiceTests {
         String exampleJwt = "3x4mpl3jwt";
         //when
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
-        when(userRepository.findByUserName(request.getUsername())).thenReturn(Optional.of(user));
+        when(userRepository.findByUserName(registrationRequest.getUsername())).thenReturn(Optional.of(user));
         when(jwtUtils.generateToken(any(), any())).thenReturn(exampleJwt);
         //then
-        String jwt = userService.createLoginJwt(request);
+        String jwt = userService.createLoginJwt(loginRequest);
         assertTrue(!jwt.isEmpty());
     }
 

@@ -1,9 +1,6 @@
 package com.spring.exercise.service;
 
-import com.spring.exercise.model.user.AuthRequest;
-import com.spring.exercise.model.user.AuthResponse;
-import com.spring.exercise.model.user.CurrentUserResponse;
-import com.spring.exercise.model.user.UserDTO;
+import com.spring.exercise.model.user.*;
 import com.spring.exercise.exceptions.InvalidCredentialsException;
 import com.spring.exercise.exceptions.UserAlreadyExistsException;
 import com.spring.exercise.entity.UserEntity;
@@ -31,37 +28,39 @@ public class UserServiceImpl implements UserDetailsService {
     private final PasswordEncoder bCryptPasswordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    public UserDTO createUser(AuthRequest authRequest) {
-        if (userRepository.findByUserName(authRequest.getUsername()).isPresent()) {
+    public UserDTO createUser(RegistrationRequest registrationRequest) {
+        if (userRepository.findByUserName(registrationRequest.getUsername()).isPresent()) {
             throw new UserAlreadyExistsException();
         }
         final var userEntity = new UserEntity();
-        userEntity.setUserName(authRequest.getUsername());
-        userEntity.setPassword(bCryptPasswordEncoder.encode(authRequest.getPassword()));
+        userEntity.setUserName(registrationRequest.getUsername());
+        userEntity.setPassword(bCryptPasswordEncoder.encode(registrationRequest.getPassword()));
+        userEntity.setDateOfBirth(registrationRequest.getDateOfBirth());
+
         userRepository.save(userEntity);
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(registrationRequest.getUsername(), registrationRequest.getPassword()));
         final var jwt = jwtUtils.generateToken(authentication, userEntity.getId());
 
         return UserDTO.mapFromEntity(userEntity, jwt);
     }
 
-    public String createLoginJwt(AuthRequest authRequest) {
+    public String createLoginJwt(LoginRequest loginRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (AuthenticationException e) {
             throw new InvalidCredentialsException();
         }
-        Optional<UserEntity> user = getUserFromDB(authRequest.getUsername());
+        Optional<UserEntity> user = getUserFromDB(loginRequest.getUsername());
 
         return jwtUtils.generateToken(authentication, user.get().getId());
     }
 
-    public AuthResponse generateRegisterResponse(UserDTO user) {
-        return AuthResponse.mapFromDTO(user);
+    public RegisterResponse generateRegisterResponse(UserDTO user) {
+        return RegisterResponse.mapFromDTO(user);
     }
 
     @Override

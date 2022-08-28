@@ -1,12 +1,12 @@
 package com.spring.exercise.integrationtests;
 
 import com.jayway.jsonpath.JsonPath;
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.model.ticket.TicketRequest;
 import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
-import com.spring.exercise.utils.ErrorAppMessages;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
@@ -56,7 +56,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
     @BeforeEach
     public void setUp() {
         ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
-        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
+        registrationRequest = new RegistrationRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
     @AfterEach
@@ -93,7 +93,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", fakeToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -110,7 +110,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -127,7 +127,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_PRICE_TOO_LOW_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_PRICE_TOO_LOW_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -144,7 +144,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -219,7 +219,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_PRICE_TOO_LOW_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_PRICE_TOO_LOW_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -241,7 +241,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -254,7 +254,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
         String tokenValue = token.substring(tokenIndexStart);
         String userId = jwtUtils.extractId(tokenValue);
 
-        MvcResult fakeUser = createCustomUser(new AuthRequest("fake_user@fake.com", "pass"));
+        MvcResult fakeUser = createCustomUser(new RegistrationRequest("fake_user@fake.com", "pass", DATE_OF_BIRTH));
         String fakeUserToken = fetchToken(fakeUser);
 
         String ticketCreateResponse = createTicketForUser(userId, token).getResponse().getContentAsString();
@@ -267,7 +267,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", fakeUserToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -343,7 +343,7 @@ public class TicketIntegrationTests extends BaseIntegrationTests {
                         .get("/tickets/show/" + wrongTicketId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_NOT_FOUND_ERROR + wrongTicketId))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errors[0].message").value(AppMessages.TICKET_NOT_FOUND_ERROR + wrongTicketId))
                 .andExpect(status().isNotFound())
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();

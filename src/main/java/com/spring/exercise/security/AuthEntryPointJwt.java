@@ -1,7 +1,7 @@
 package com.spring.exercise.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spring.exercise.utils.ErrorAppMessages;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.ErrorResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -19,7 +19,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 						 AuthenticationException authException) throws IOException {
 		ErrorResponse errorResponse = new ErrorResponse();
-		errorResponse.setMessage(ErrorAppMessages.NOT_AUTHORIZED_ERROR);
+		errorResponse.setMessage(AppMessages.NOT_AUTHORIZED_ERROR);
 		Map<Object, List<Object> > errorMap = Map.of("errors", List.of(errorResponse));
 		response.setContentType("application/json");
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

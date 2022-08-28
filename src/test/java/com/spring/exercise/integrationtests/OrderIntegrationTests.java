@@ -4,11 +4,11 @@ import com.spring.exercise.entity.OrderEntity;
 import com.spring.exercise.entity.TicketEntity;
 import com.spring.exercise.model.order.OrderCreateRequest;
 import com.spring.exercise.model.ticket.TicketRequest;
-import com.spring.exercise.model.user.AuthRequest;
+import com.spring.exercise.model.user.RegistrationRequest;
 import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.repository.UserRepository;
-import com.spring.exercise.utils.ErrorAppMessages;
+import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
 import org.bson.types.ObjectId;
@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,11 +65,12 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     private static final String TICKET_TITLE = "ticket_title";
     private static final BigDecimal TICKET_PRICE = new BigDecimal(13);
     private final static String TICKET_DESCRIPTION = "ticket_description_";
+    private final static LocalDate DATE_OF_BIRTH = LocalDate.of(1980, 1, 8);
 
     @BeforeEach
     public void setUp() {
         ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
-        authRequest = new AuthRequest(USER_NAME, USER_PASSWORD);
+        registrationRequest = new RegistrationRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
     }
 
     @AfterEach
@@ -81,8 +83,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith201WhenOrderIsCreated() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult user = createCustomUser(authRequestUser);
+        RegistrationRequest registrationRequestUser = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult user = createCustomUser(registrationRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
@@ -119,8 +121,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith201WhenOrderIsCreatedAndChangeOrderStatusToCancelled() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult user = createCustomUser(authRequestUser);
+        RegistrationRequest registrationRequestUser = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult user = createCustomUser(registrationRequestUser);
         int tokenIndexStart = 7;
 
         String token = fetchToken(ticketOwner);
@@ -192,7 +194,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -200,8 +202,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith400WhenTicketIdIsBlank() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult user = createCustomUser(authRequestUser);
+        RegistrationRequest registrationRequestUser = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult user = createCustomUser(registrationRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
@@ -217,7 +219,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.BLANK_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.BLANK_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -225,8 +227,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith404WhenTicketNotFound() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestUser = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult user = createCustomUser(authRequestUser);
+        RegistrationRequest registrationRequestUser = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult user = createCustomUser(registrationRequestUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
@@ -252,11 +254,10 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     @Test
     public void shouldResponseWith400WhenTicketIsBooked() throws Exception {
         MvcResult ticketOwner = createDefaultUser();
-        AuthRequest authRequestFirstUser = new AuthRequest("first_user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequestFirstUser);
-        AuthRequest authRequestSecondUser = new AuthRequest("second_user_order@mail.com", "pass");
-        MvcResult secondUser = createCustomUser(authRequestSecondUser);
-
+        RegistrationRequest registrationRequestFirstUser = new RegistrationRequest("first_user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequestFirstUser);
+        RegistrationRequest registrationRequestSecondUser = new RegistrationRequest("second_user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult secondUser = createCustomUser(registrationRequestSecondUser);
         int tokenIndexStart = 7;
         String token = fetchToken(ticketOwner);
         String tokenValue = token.substring(tokenIndexStart);
@@ -285,7 +286,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.TICKET_ALREADY_BOOKED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.TICKET_ALREADY_BOOKED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -309,7 +310,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .content(mapToJson(orderCreateRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.OWN_TICKET_PURCHASE_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.OWN_TICKET_PURCHASE_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -383,8 +384,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequest);
         token = fetchToken(firstUser);
         JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
@@ -425,8 +426,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequest);
         token = "fake_token";
         JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
@@ -445,7 +446,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -465,8 +466,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequest);
         token = fetchToken(firstUser);
         JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
@@ -507,8 +508,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult secondUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult secondUser = createCustomUser(registrationRequest);
         JSONObject json = new JSONObject(secondUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
 
@@ -548,8 +549,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult secondUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult secondUser = createCustomUser(registrationRequest);
         JSONObject json = new JSONObject(secondUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
 
@@ -589,8 +590,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequest);
         token = fetchToken(firstUser);
         JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
@@ -631,8 +632,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequest);
         token = "fake_token";
         JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
@@ -651,7 +652,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                         .header("Authorization", token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errors[0].message").value(ErrorAppMessages.NOT_AUTHORIZED_ERROR))
+                .andExpect(jsonPath("$.errors[0].message").value(AppMessages.NOT_AUTHORIZED_ERROR))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }
@@ -671,8 +672,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 ObjectId.get().toString());
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequest);
         token = fetchToken(firstUser);
         JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
@@ -712,8 +713,8 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 null);
         ticketRepository.save(ticket);
 
-        AuthRequest authRequest = new AuthRequest("user_order@mail.com", "pass");
-        MvcResult firstUser = createCustomUser(authRequest);
+        RegistrationRequest registrationRequest = new RegistrationRequest("user_order@mail.com", "pass", DATE_OF_BIRTH);
+        MvcResult firstUser = createCustomUser(registrationRequest);
         token = fetchToken(firstUser);
         JSONObject json = new JSONObject(firstUser.getResponse().getContentAsString());
         String secondUserId = json.getString("id");
