@@ -15,6 +15,7 @@ import com.spring.exercise.service.PaymentServiceImpl;
 import com.spring.exercise.service.PaymentVendorStripe;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
+import com.spring.exercise.utils.TicketDiscountCalculator;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,11 +46,14 @@ public class PaymentServiceTests extends BaseIntegrationTests {
     private PaymentRepository paymentRepository;
     @Mock
     PaymentVendorStripe paymentVendorStripe;
+    @Mock
+    TicketDiscountCalculator ticketDiscountCalculator;
 
     private OrderEntity orderEntity;
     private TicketEntity ticketEntity;
     private PaymentEntity paymentEntity;
     private PaymentVendorDTO paymentVendorDTO;
+    private BigDecimal discount;
 
     private final static String FAKE_TOKEN = "fake_token";
     private final static String FAKE_USER_ID = "fake_user_id";
@@ -87,21 +91,43 @@ public class PaymentServiceTests extends BaseIntegrationTests {
     }
 
     @Test
-    public void testCreatePaymentShouldSuccessWhenRequestIsCorrect() {
+    public void testCreatePaymentShouldSuccessWhenRequestIsCorrectAndDiscountNotApllied() {
         //given
         String fakeOrderId = FAKE_ORDER_ID;
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setToken("tok_visa");
         paymentRequest.setOrderId(fakeOrderId);
+        discount = BigDecimal.ZERO;
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(fakeOrderId)).thenReturn(Optional.of(orderEntity));
         when(paymentRepository.save(any())).thenReturn(paymentEntity);
         when(paymentVendorStripe.pay(any())).thenReturn(paymentVendorDTO);
+        when(ticketDiscountCalculator.calculateDiscount(any(), any())).thenReturn(discount);
         //then
         PaymentResponse paymentResponse = paymentService.createPayment(paymentRequest, FAKE_TOKEN);
         assertEquals(paymentResponse.getPaymentId(), paymentEntity.getId());
     }
+
+    @Test
+    public void testCreatePaymentShouldSuccessWhenRequestIsCorrectAndDiscountApllied() {
+        //given
+        String fakeOrderId = FAKE_ORDER_ID;
+        PaymentRequest paymentRequest = new PaymentRequest();
+        paymentRequest.setToken("tok_visa");
+        paymentRequest.setOrderId(fakeOrderId);
+        discount = BigDecimal.valueOf(5);
+        //when
+        when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
+        when(orderRepository.findById(fakeOrderId)).thenReturn(Optional.of(orderEntity));
+        when(paymentRepository.save(any())).thenReturn(paymentEntity);
+        when(paymentVendorStripe.pay(any())).thenReturn(paymentVendorDTO);
+        when(ticketDiscountCalculator.calculateDiscount(any(), any())).thenReturn(discount);
+        //then
+        PaymentResponse paymentResponse = paymentService.createPayment(paymentRequest, FAKE_TOKEN);
+        assertEquals(paymentResponse.getPaymentId(), paymentEntity.getId());
+    }
+
 
     @Test
     public void testCreatePaymentShouldNotSuccessWhenUserIsNotOrderOwner() {

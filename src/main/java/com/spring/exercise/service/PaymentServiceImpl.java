@@ -12,11 +12,13 @@ import com.spring.exercise.repository.OrderRepository;
 import com.spring.exercise.repository.PaymentRepository;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
+import com.spring.exercise.utils.TicketDiscountCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -26,6 +28,7 @@ public class PaymentServiceImpl {
     private final PaymentVendorService paymentVendorService;
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final TicketDiscountCalculator ticketDiscountCalculator;
     private final JwtUtils jwtUtils;
 
     public PaymentResponse createPayment(PaymentRequest paymentRequest, String token) {
@@ -53,7 +56,7 @@ public class PaymentServiceImpl {
             throw new BadRequestException(errorMessage);
         }
         OrderDTO orderDTO = OrderDTO.mapFromEntity(foundOrder);
-        BigDecimal amount = orderDTO.getTicket().getPrice();
+        BigDecimal amount = ticketDiscountCalculator.calculateDiscount(LocalDate.now(), orderDTO.getTicket().getPrice());
         PaymentInput paymentInput =  new PaymentInput();
         paymentInput.setAmount(amount);
         paymentInput.setStripeToken(stripeToken);

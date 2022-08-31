@@ -14,6 +14,7 @@ import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.utils.AppMessages;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
+import com.spring.exercise.utils.TicketDiscountCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -33,15 +35,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderServiceImpl {
-    @Value("${order.expiration.in.seconds}")
-    private int expirationSeconds;
+    private static final int MAX_ORDERS_SIZE = 50;
     private final OrderRepository orderRepository;
     private final TicketRepository ticketRepository;
-    private final SQSConnectionConfiguration queueConfiguration;
-    private static final int MAX_ORDERS_SIZE = 50;
-
     private final JwtUtils jwtUtils;
-
+    private final SQSConnectionConfiguration queueConfiguration;
+    private final TicketDiscountCalculator ticketDiscountCalculator;
+    private int discountPercentage;
+    @Value("${order.expiration.in.seconds}")
+    private int expirationSeconds;
 
     public OrderResponse createTicketOrder(String ticketId, String token) {
         Optional<TicketEntity> optionalTicket = ticketRepository.findById(ticketId);
@@ -80,10 +82,10 @@ public class OrderServiceImpl {
         sendMessageRequest.withQueueUrl(queueUrl.getQueueUrl());
         sendMessageRequest.withDelaySeconds(expirationSeconds);
         sqsClient.sendMessage(sendMessageRequest);
-
+        discountPercentage = ticketDiscountCalculator.calculateDiscountPercentage(LocalDate.now());
         return OrderResponse.builder().id(order.getId())
                 .orderStatus(order.getOrderStatus())
-                .ticket(new OrderResponse.TicketOrderResponse(ticketId, price))
+                .ticket(new OrderResponse.TicketOrderResponse(ticketId, price, discountPercentage))
                 .expiration(expiresAt).build();
     }
 
@@ -92,12 +94,13 @@ public class OrderServiceImpl {
 
         String userId = jwtUtils.fetchUserIdFromToken(token);
         Page<OrderEntity> pageOrders = orderRepository.findAllByUserId(userId, paging);
+        discountPercentage = ticketDiscountCalculator.calculateDiscountPercentage(LocalDate.now());
         List<OrderResponse> orders = pageOrders.getContent().stream().map(order -> OrderResponse.builder()
                 .id(order.getId())
                 .orderStatus(order.getOrderStatus())
                 .expiration(order.getExpiresAt())
                 .ticket(new OrderResponse.TicketOrderResponse(order.getTicket().getId(),
-                        order.getTicket().getPrice()))
+                        order.getTicket().getPrice(), discountPercentage))
                 .build()).collect(Collectors.toList());
 
         return OrderListResponse.builder()
@@ -119,12 +122,13 @@ public class OrderServiceImpl {
             log.warn(errorMessage);
             throw new NotFoundException(errorMessage);
         }
-
+        discountPercentage = ticketDiscountCalculator.calculateDiscountPercentage(LocalDate.now());
         return OrderResponse.builder()
                 .id(orderId)
                 .orderStatus(foundOrder.getOrderStatus())
                 .expiration(foundOrder.getExpiresAt())
-                .ticket(new OrderResponse.TicketOrderResponse(foundOrder.getTicket().getId(), foundOrder.getTicket().getPrice()))
+                .ticket(new OrderResponse.TicketOrderResponse(
+                        foundOrder.getTicket().getId(), foundOrder.getTicket().getPrice(), discountPercentage))
                 .build();
     }
 
