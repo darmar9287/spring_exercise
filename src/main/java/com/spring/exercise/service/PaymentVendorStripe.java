@@ -17,7 +17,7 @@ import java.util.Map;
 @Service
 @ConditionalOnProperty(name = "payment.vendor", havingValue = "stripe")
 @Slf4j
-public class PaymentVendorStripe implements PaymentVendorService{
+public class PaymentVendorStripe implements PaymentVendorService {
     @Value("${stripe.secret_key}")
     private String apiKey;
 

@@ -15,6 +15,7 @@ import com.spring.exercise.repository.TicketRepository;
 import com.spring.exercise.service.OrderServiceImpl;
 import com.spring.exercise.utils.JwtUtils;
 import com.spring.exercise.utils.OrderStatus;
+import com.spring.exercise.utils.TicketDiscountCalculator;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,8 @@ public class OrderServiceTests extends BaseIntegrationTests {
     private JwtUtils jwtUtils;
     @Mock
     private AmazonSQSAsync sqsClient;
+    @Mock
+    private TicketDiscountCalculator ticketDiscountCalculator;
 
     private TicketEntity ticket;
     private OrderEntity order;
@@ -85,17 +88,41 @@ public class OrderServiceTests extends BaseIntegrationTests {
     }
 
     @Test
-    public void testCreateOrderShouldSuccessWhenRequestIsCorrect() {
+    public void testCreateOrderShouldSuccessWhenRequestIsCorrectAndNoDiscountApplied() {
+        //given
+        int discountPercentage = 0;
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID_2);
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
         when(sqsConnectionConfiguration.amazonSQSClient()).thenReturn(sqsClient);
         when(sqsClient.getQueueUrl("order-expiration")).thenReturn(new GetQueueUrlResult());
+        when(ticketDiscountCalculator.calculateDiscountPercentage(any())).thenReturn(discountPercentage);
         //then
         OrderResponse orderResponse = orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN);
         assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
         assertEquals(orderResponse.getTicket().getTicketId(), order.getTicket().getId());
         assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
+        assertEquals(orderResponse.getTicket().getPrice(), order.getTicket().getPrice());
+        assertEquals(discountPercentage, orderResponse.getTicket().getDiscountPercentage());
+    }
+
+    @Test
+    public void testCreateOrderShouldSuccessWhenRequestIsCorrectAndDiscountApplied() {
+        //given
+        int discountPercentage = 5;
+        //when
+        when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID_2);
+        when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
+        when(sqsConnectionConfiguration.amazonSQSClient()).thenReturn(sqsClient);
+        when(sqsClient.getQueueUrl("order-expiration")).thenReturn(new GetQueueUrlResult());
+        when(ticketDiscountCalculator.calculateDiscountPercentage(any())).thenReturn(discountPercentage);
+        //then
+        OrderResponse orderResponse = orderService.createTicketOrder(FAKE_TICKET_ID, FAKE_TOKEN);
+        assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
+        assertEquals(orderResponse.getTicket().getTicketId(), order.getTicket().getId());
+        assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
+        assertEquals(orderResponse.getTicket().getPrice(), order.getTicket().getPrice());
+        assertEquals(discountPercentage, orderResponse.getTicket().getDiscountPercentage());
     }
 
     @Test
@@ -166,18 +193,41 @@ public class OrderServiceTests extends BaseIntegrationTests {
     }
 
     @Test
-    public void testShouldReturnOrderWhenUserIsItsOwner() {
+    public void testShouldReturnOrderWhenUserIsItsOwnerAndNoDiscountApplied() {
         //given
+        int discountPercentage = 0;
         order.setUserId(FAKE_USER_ID);
         //when
         when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
         when(orderRepository.findById(any())).thenReturn(Optional.of(order));
+        when(ticketDiscountCalculator.calculateDiscountPercentage(any())).thenReturn(discountPercentage);
         //then
         OrderResponse orderResponse = orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_ORDER_ID);
         assertEquals(orderResponse.getId(), order.getId());
         assertEquals(orderResponse.getTicket().getTicketId(), order.getTicket().getId());
         assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
         assertEquals(orderResponse.getExpiration(), order.getExpiresAt());
+        assertEquals(orderResponse.getTicket().getPrice(), order.getTicket().getPrice());
+        assertEquals(discountPercentage, orderResponse.getTicket().getDiscountPercentage());
+    }
+
+    @Test
+    public void testShouldReturnOrderWhenUserIsItsOwnerAndDiscountApplied() {
+        //given
+        int discountPercentage = 0;
+        order.setUserId(FAKE_USER_ID);
+        //when
+        when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
+        when(orderRepository.findById(any())).thenReturn(Optional.of(order));
+        when(ticketDiscountCalculator.calculateDiscountPercentage(any())).thenReturn(discountPercentage);
+        //then
+        OrderResponse orderResponse = orderService.getTicketOrderForUser(FAKE_TOKEN, FAKE_ORDER_ID);
+        assertEquals(orderResponse.getId(), order.getId());
+        assertEquals(orderResponse.getTicket().getTicketId(), order.getTicket().getId());
+        assertEquals(orderResponse.getOrderStatus(), order.getOrderStatus());
+        assertEquals(orderResponse.getExpiration(), order.getExpiresAt());
+        assertEquals(orderResponse.getTicket().getPrice(), order.getTicket().getPrice());
+        assertEquals(discountPercentage, orderResponse.getTicket().getDiscountPercentage());
     }
 
     @Test
@@ -238,4 +288,15 @@ public class OrderServiceTests extends BaseIntegrationTests {
         //then
         assertThrows(NotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
     }
+
+//    @Test
+//    public void testShouldNotDeleteOrderWhenOrderNotBelongsToUser() {
+//        //given
+//        order.setUserId(FAKE_USER_ID_2);
+//        //when
+//        when(jwtUtils.fetchUserIdFromToken(any())).thenReturn(FAKE_USER_ID);
+//        when(orderRepository.findById(any())).thenReturn(Optional.of(order));
+//        //then
+//        assertThrows(NotFoundException.class, () -> orderService.cancelOrder(FAKE_TOKEN, FAKE_USER_ID));
+//    }
 }

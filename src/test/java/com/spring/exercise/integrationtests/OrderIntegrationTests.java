@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,8 +63,10 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     private JwtUtils jwtUtils;
 
     private TicketRequest ticketRequest;
-    private static final String TICKET_TITLE = "ticket_title";
-    private static final BigDecimal TICKET_PRICE = new BigDecimal(13);
+    private DayOfWeek currentDay;
+    private int discountPercentage;
+    private final static  String TICKET_TITLE = "ticket_title";
+    private final static  BigDecimal TICKET_PRICE = new BigDecimal(13);
     private final static String TICKET_DESCRIPTION = "ticket_description_";
     private final static LocalDate DATE_OF_BIRTH = LocalDate.of(1980, 1, 8);
 
@@ -71,6 +74,12 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
     public void setUp() {
         ticketRequest = new TicketRequest(TICKET_TITLE, TICKET_PRICE, TICKET_DESCRIPTION);
         registrationRequest = new RegistrationRequest(USER_NAME, USER_PASSWORD, DATE_OF_BIRTH);
+        currentDay = LocalDate.now().getDayOfWeek();
+        if (currentDay == DayOfWeek.WEDNESDAY) {
+            discountPercentage = 5;
+        } else {
+            discountPercentage = 0;
+        }
     }
 
     @AfterEach
@@ -105,6 +114,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 .andExpect(jsonPath("$.orderStatus").value(expectedOrderStatus))
                 .andExpect(jsonPath("$..ticketId").value(ticketId))
                 .andExpect(jsonPath("$..price").value(TICKET_PRICE.intValue()))
+                .andExpect(jsonPath("$..discountPercentage").value(discountPercentage))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
         String orderId = new JSONObject(result.getResponse().getContentAsString()).getString("id");
@@ -144,6 +154,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 .andExpect(jsonPath("$.orderStatus").value(expectedOrderStatus))
                 .andExpect(jsonPath("$..ticketId").value(ticketId))
                 .andExpect(jsonPath("$..price").value(TICKET_PRICE.intValue()))
+                .andExpect(jsonPath("$..discountPercentage").value(discountPercentage))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
         String orderId = new JSONObject(result.getResponse().getContentAsString()).getString("id");
@@ -361,6 +372,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 .andExpect(jsonPath("$..orderStatus", hasSize(ordersPerPage)))
                 .andExpect(jsonPath("$..expiration", hasSize(ordersPerPage)))
                 .andExpect(jsonPath("$..ticket", hasSize(ordersPerPage)))
+
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
@@ -407,6 +419,7 @@ public class OrderIntegrationTests extends BaseIntegrationTests {
                 .andExpect(jsonPath("$.orderStatus").value("CREATED"))
                 .andExpect(jsonPath("$..ticketId").value(ticket.getId()))
                 .andExpect(jsonPath("$..price").value(TICKET_PRICE.intValue()))
+                .andExpect(jsonPath("$..discountPercentage").value(discountPercentage))
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
     }

@@ -24,5 +24,6 @@ public class OrderResponse {
     public static class TicketOrderResponse {
         String ticketId;
         BigDecimal price;
+        int discountPercentage;
     }
 }

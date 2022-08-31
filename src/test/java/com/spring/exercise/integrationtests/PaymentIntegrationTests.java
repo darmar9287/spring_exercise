@@ -54,6 +54,7 @@ public class PaymentIntegrationTests extends BaseIntegrationTests {
     @Autowired
     private JwtUtils jwtUtils;
 
+
     private PaymentRequest paymentRequest;
     private TicketRequest ticketRequest;
     private static final String TICKET_TITLE = "ticket_title";
